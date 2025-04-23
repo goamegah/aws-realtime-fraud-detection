@@ -1,0 +1,7 @@
+AWS_REGION="eu-west-1"
+SOLUTIONS_S3_BUCKET="credit-card-fraud-s3"
+SOLUTION_NAME="credit-card-fraud-detection"
+AWS_ID_ACCESS_KEY=""
+AWS_SECRET_ACCESS_KEY=""
+REST_API_GATEWAY=""
+FASTAPI_URL=""
