@@ -1,12 +1,45 @@
+
 [project]
-name = "realtime-fraud-detection"
-version = "0.1.0"
-description = "Add your description here"
+name = "fraudwatcher"                     
+version = "0.0.1"
+description = "Package for running the data pipeline for AWS fraud detection"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
+authors = [{name = "Godwin AMEGAH", email = "komlan.godwin.amegah@gmail.com"}]
 dependencies = [
-    "python-dotenv>=1.0.1",
+    "boto3>=1.37.18",
+    "imbalanced-learn>=0.13.0",
+    "ipykernel>=6.29.5",
+    "lightgbm>=4.6.0",
+    "matplotlib>=3.10.1",
+    "numpy>=2.2.4",
+    "pandas>=2.2.3",
+    "requests>=2.32.3",
+    "scikit-learn>=1.6.1",
+    "seaborn>=0.13.2",
+    "xgboost>=3.0.0"
 ]
 
-[tool.uv.workspace]
-members = ["apps/server", "apps/ui", "source"]
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pylint",
+    "pytest-mock",
+    "pytest-cov",
+    "wheel",
+    "mock"
+]
+
+[project.scripts]
+fraudwatcher = "fraudwatcher.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["fraudwatcher", "fraudwatcher.*"]
+
+[tool.pytest.ini_options]
+python_files = ["test_*.py", "*_test.py"]
+testpaths = ["tests"]
+
+[tool.setuptools.package-data]
+fraudwatcher = ["py.typed"]
