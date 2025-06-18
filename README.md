@@ -1,0 +1,1 @@
+terraform output lambda_exec_role_arn

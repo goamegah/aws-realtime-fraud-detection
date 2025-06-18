@@ -1,6 +1,5 @@
-
 [project]
-name = "fraudwatcher"                     
+name = "fraudwatch"                     
 version = "0.0.1"
 description = "Package for running the data pipeline for AWS fraud detection"
 readme = "README.md"
@@ -31,15 +30,15 @@ test = [
 ]
 
 [project.scripts]
-fraudwatcher = "fraudwatcher.main:main"
+fraudwatch = "fraudwatch.main:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["fraudwatcher", "fraudwatcher.*"]
+include = ["fraudwatch", "fraudwatch.*"]
 
 [tool.pytest.ini_options]
 python_files = ["test_*.py", "*_test.py"]
 testpaths = ["tests"]
 
 [tool.setuptools.package-data]
-fraudwatcher = ["py.typed"]
+fraudwatch = ["py.typed"]
