@@ -1,4 +1,4 @@
-<h1 align="center">Real-Time Fraud Detection on AWS/h1>
+<h1 align="center">Real-Time Fraud Detection on AWS </h1>
 
 Overview
 Detecting potential fraud in financial systems is a major challenge for organizations worldwide. Building robust solutions that enable real-time actions is essential for companies aiming to provide greater security to their customers during financial transactions.
