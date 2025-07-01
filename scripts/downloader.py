@@ -2,7 +2,7 @@ import os
 import zipfile
 import boto3
 from dotenv import load_dotenv
-from definition import DATASET_LOCAL_DIR
+from fraudit.definition import DATASET_LOCAL_DIR
 
 # Charger les variables d'environnement depuis le fichier .env
 load_dotenv()
