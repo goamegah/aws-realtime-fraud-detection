@@ -217,11 +217,20 @@ testing/
 
 
 # local files
-checkpoints/
 dataset/
-apps/
-deployment/
-infrastructure/
-lambda/
-sagemaker/
 tests/
+scriptenv/
+
+# chalice
+deployment/
+deployments/
+deployed/
+chlenv/
+config.json
+
+# custom terraform files
+*alt
+
+# local pyspark
+checkpoints/
+resources/
