@@ -1,0 +1,6 @@
+pytest
+pylint
+pytest-mock
+pytest-cov
+wheel
+mock
