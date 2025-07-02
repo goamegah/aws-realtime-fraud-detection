@@ -1,4 +1,4 @@
-# raudit/utils/db_utils.py
+# scripts/create_database_table.py
 
 import psycopg2
 from psycopg2 import sql

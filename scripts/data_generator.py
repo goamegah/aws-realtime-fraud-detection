@@ -25,6 +25,7 @@ if not logger.handlers:
     ))
     logger.addHandler(console_handler)
 
+
 def generate_metadata():
     timestamp = datetime.datetime.now().replace(microsecond=0).isoformat()
     user_id = f"user_{random.randint(1000, 9999)}"
@@ -54,14 +55,11 @@ def generate_metadata():
         "geo": geo
     }
 
-
-
 def get_data_payload(test_array):
     return {
         'data': ','.join(map(str, test_array)),
         'metadata': generate_metadata()
     }
-
 
 def invoke_chalice_api(payload):
     for attempt in range(1, MAX_RETRIES + 1):

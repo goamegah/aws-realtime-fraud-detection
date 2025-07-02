@@ -11,11 +11,14 @@ from fraudit.jobs.elt.schema import get_stream_schema
 from fraudit.jobs.elt.transform import transform_df
 from fraudit.jobs.elt.loader import write_to_postgres
 import fraudit.jobs.elt.config as config
-from fraudit.utils.db_utils import create_table_if_not_exists
+from scripts.create_database_table import create_table_if_not_exists
+from fraudit.utils.logging import get_logger
+
+# Initialize logger
+logger = get_logger()
 
 # Charger .env localement
 load_dotenv()
-
 
 def get_postgres_credentials():
     """
@@ -23,7 +26,7 @@ def get_postgres_credentials():
     sinon fallback sur les variables d'environnement locales.
     """
     if config.SECRET_ID:
-        print(" -> Fetching PostgreSQL credentials from AWS Secrets Manager...")
+        logger.info("Fetching PostgreSQL credentials from AWS Secrets Manager...")
         client = boto3.client('secretsmanager', region_name=config.AWS_REGION)
         secret = client.get_secret_value(SecretId=config.SECRET_ID)
         creds = json.loads(secret['SecretString'])
@@ -53,7 +56,7 @@ def main():
     }
 
     # SparkSession with Kinesis connector
-    print("-> Initializing SparkSession with Kinesis connector...")
+    logger.info("Initializing SparkSession with Kinesis connector...")
 
     spark = (
         SparkSession.builder
@@ -63,21 +66,21 @@ def main():
         .getOrCreate()
     )
 
-    print(f"-> Kinesis connector jar loaded from: {KINESIS_CONNECTOR_PATH}")
+    logger.info(f"Kinesis connector jar loaded from: {KINESIS_CONNECTOR_PATH}")
 
     # Check important variables
-    print("=== Configuration ===:")
-    print("AWS_ACCESS_KEY_ID:", config.AWS_ID_ACCESS_KEY)
-    print("AWS_SECRET_ACCESS_KEY:", config.AWS_SECRET_ACCESS_KEY)
-    print("KINESIS_STREAM:", config.KINESIS_STREAM)
-    print("AWS_REGION:", config.AWS_REGION)
-    print("KINESIS_ENDPOINT:", config.KINESIS_ENDPOINT)
-    print("PostgreSQL JDBC URL:", jdbc_url)
-    print("PostgreSQL Properties:", props)
-    print("Checkpoint Path:", CHECKPOINT_PATH)
-    print("\n... Démarrage du job de streaming...\n")
+    logger.info("=== Configuration ===")
+    logger.info(f"AWS_ACCESS_KEY_ID: {config.AWS_ID_ACCESS_KEY}")
+    logger.info(f"AWS_SECRET_ACCESS_KEY: {config.AWS_SECRET_ACCESS_KEY}")
+    logger.info(f"KINESIS_STREAM: {config.KINESIS_STREAM}")
+    logger.info(f"AWS_REGION: {config.AWS_REGION}")
+    logger.info(f"KINESIS_ENDPOINT: {config.KINESIS_ENDPOINT}")
+    logger.info(f"PostgreSQL JDBC URL: {jdbc_url}")
+    logger.info(f"PostgreSQL Properties: {props}")
+    logger.info(f"Checkpoint Path: {CHECKPOINT_PATH}")
+    logger.info("Starting streaming job...")
 
-    # reading Kinesis stream
+    # Reading Kinesis stream
     raw_df = (
         spark
         .readStream
@@ -92,7 +95,7 @@ def main():
     )
 
     # JSON parsing with structured schema
-    print("-> Parsing JSON data from Kinesis stream...")
+    logger.info("Parsing JSON data from Kinesis stream...")
 
     json_df = (
         raw_df
@@ -102,12 +105,12 @@ def main():
     )
 
     # Business transformation
-    print("-> Transforming data...")
+    logger.info("Transforming data...")
 
     transformed_df = transform_df(json_df)
 
     # Writing to PostgreSQL in streaming mode
-    print("-> Writing transformed data to PostgreSQL...")
+    logger.info("Writing transformed data to PostgreSQL...")
 
     query = write_to_postgres(transformed_df, jdbc_url, props, checkpoint_path=CHECKPOINT_PATH)
     query.awaitTermination()
