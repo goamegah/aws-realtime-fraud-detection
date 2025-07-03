@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from dotenv import load_dotenv
-from scripts.data_generator import generate_data
+from data_generator import generate_data
 
 # Charger les variables d'environnement depuis le fichier .env
 load_dotenv()

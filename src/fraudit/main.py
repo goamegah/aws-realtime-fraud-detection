@@ -11,19 +11,19 @@ from fraudit.jobs.elt.schema import get_stream_schema
 from fraudit.jobs.elt.transform import transform_df
 from fraudit.jobs.elt.loader import write_to_postgres
 import fraudit.jobs.elt.config as config
-from scripts.create_database_table import create_table_if_not_exists
+from fraudit.utils.create_database_table import create_table_if_not_exists 
 from fraudit.utils.logging import get_logger
 
-# Initialize logger
-logger = get_logger()
-
-# Charger .env localement
 load_dotenv()
+logger = get_logger()
 
 def get_postgres_credentials():
     """
-    Récupère les credentials PostgreSQL depuis Secrets Manager si SECRET_ID défini,
-    sinon fallback sur les variables d'environnement locales.
+    Fetch PostgreSQL credentials from AWS Secrets Manager or environment variables.
+    If SECRET_ID is set in the config, it fetches credentials from AWS Secrets Manager.
+    Otherwise, it uses the environment variables defined in the .env file.
+    Returns:
+        dict: A dictionary containing PostgreSQL credentials.
     """
     if config.SECRET_ID:
         logger.info("Fetching PostgreSQL credentials from AWS Secrets Manager...")
@@ -39,7 +39,6 @@ def get_postgres_credentials():
             "dbname": config.POSTGRES_DB
         }
     return creds
-
 
 def main():
     # Credentials
@@ -89,7 +88,7 @@ def main():
         .option("kinesis.region", config.AWS_REGION)
         .option("kinesis.awsAccessKeyId", config.AWS_ID_ACCESS_KEY)
         .option("kinesis.awsSecretKey", config.AWS_SECRET_ACCESS_KEY)
-        .option("kinesis.startingposition", "LATEST")
+        .option("kinesis.startingposition", "TRIM_HORIZON")
         .option("kinesis.endpointUrl", config.KINESIS_ENDPOINT)
         .load()
     )

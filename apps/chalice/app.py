@@ -66,6 +66,7 @@ def get_fraud_prediction(data, threshold=0.5):
     logger.info(f"Fraud prediction: {prediction} (proba: {pred_proba})")
     return {"pred_proba": pred_proba, "prediction": prediction}
 
+
 def store_data_prediction(output, metadata):
     # extract metadata
     timestamp = metadata["timestamp"]

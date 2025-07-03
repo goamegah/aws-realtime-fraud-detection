@@ -9,3 +9,4 @@ DATASET_LOCAL_DIR = os.path.join(Path(ROOT_DIR).parent.parent.absolute(), 'datas
 KINESIS_CONNECTOR_PATH = os.path.join(Path(ROOT_DIR).parent.absolute(), 'resources', 'spark-streaming-sql-kinesis-connector_2.12-1.0.0.jar')
 CHECKPOINT_PATH = os.path.join(Path(ROOT_DIR).parent.parent.absolute(), 'checkpoints')
 print("KINESIS_CONNECTOR_PATH:", KINESIS_CONNECTOR_PATH)
+print("CHECKPOINT_PATH:", CHECKPOINT_PATH)

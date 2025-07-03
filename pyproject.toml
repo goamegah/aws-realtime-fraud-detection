@@ -11,14 +11,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-
-app = [
-    "chalice >=1.32.0"
-]
-
 dev = [
     "pyspark >=3.5.5",
-    "awsglue-dev>=2021.12.30"
+    "awsglue-dev>=2021.12.30",
+    "psycopg[binary] >=2.9.6",
 ]
 
 test = [
