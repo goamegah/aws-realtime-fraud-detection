@@ -12,8 +12,8 @@ from pathlib import Path
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env")
 
 MAX_RETRIES = 5
-BASE_DELAY = 1  # en secondes
-API_URL = os.getenv("CHALICE_API_URL")  # ex: https://xxxxxx.execute-api.eu-west-1.amazonaws.com/api
+BASE_DELAY = 1  # in seconds
+API_URL = os.getenv("CHALICE_API_URL")  # e.g.: https://xxxxxx.execute-api.eu-west-1.amazonaws.com/api
 print(f"API URL: {API_URL}")
 
 logger = logging.getLogger(__name__)
@@ -66,21 +66,22 @@ def invoke_chalice_api(payload):
         try:
             response = requests.post(f"{API_URL}/predict", json=payload, timeout=10)
             response.raise_for_status()
-            logger.info("Réponse reçue : %s", response.json())
+            logger.info("Response received: %s", response.json())
             return
         except requests.exceptions.RequestException as e:
-            logger.warning("Tentative %d échouée : %s", attempt, e)
+            logger.warning("Attempt %d failed: %s", attempt, e)
 
             if attempt == MAX_RETRIES:
-                logger.error("Toutes les tentatives ont échoué. Abandon.")
-                raise RuntimeError("Toutes les tentatives d'appel à l'API ont échoué.")
+                logger.error("All attempts failed. Giving up.")
+                raise RuntimeError("All attempts to call the API have failed.")
 
             backoff = BASE_DELAY * (2 ** (attempt - 1))
             jitter = min(1, 0.1 * backoff) * (0.5 - np.random.rand())
             delay = max(0.1, backoff + jitter)
 
-            logger.info("Nouvelle tentative dans %.2f secondes...", delay)
+            logger.info("Retrying in %.2f seconds...", delay)
             time.sleep(delay)
+
 
 
 def generate_data(X_test, max_requests=None):
@@ -89,16 +90,22 @@ def generate_data(X_test, max_requests=None):
         np.random.shuffle(X_test)
         for example in X_test:
             if max_requests is not None and request_count >= max_requests:
-                logger.info(f"Limite atteinte : {request_count} requêtes envoyées.")
+                logger.info(f"Limit reached: {request_count} requests sent.")
                 return
+
             payload = get_data_payload(example)
             try:
                 invoke_chalice_api(payload)
             except RuntimeError as e:
-                logger.error("Erreur fatale d'appel API : %s", e)
-                return  # ou `continue` si tu veux ignorer l’échec
-            wait = poisson.rvs(1) + np.random.rand() / 100
+                logger.error("Fatal API call error: %s", e)
+                return  # or `continue` to ignore the error
+
+            # Simulate realistic delay: average wait time between 3 and 6 seconds, with some variation
+            base_wait = poisson.rvs(mu=10)  # average ~10 sec (you can adjust)
+            jitter = np.random.uniform(0.5, 1.5)  # variation between 0.5 and 1.5 sec
+            wait = base_wait + jitter
+
+            logger.debug(f"Pause before next send: {wait:.2f} seconds")
             time.sleep(wait)
+
             request_count += 1
-
-

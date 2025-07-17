@@ -12,7 +12,7 @@ load_dotenv()
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATASET_LOCAL_DIR = os.path.join(Path(ROOT_DIR).parent.absolute(), 'dataset')
-PARALLEL_INVOCATION = True
+PARALLEL_INVOCATION = False
 
 
 if __name__ == "__main__":
