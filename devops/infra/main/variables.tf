@@ -7,13 +7,13 @@ variable "aws_region" {
 variable "postgres_user" {
     description = "Nom d'utilisateur PostgreSQL"
     type        = string
-    default     = "fraud_admin"
+    default     = "postgres_user"
 }
 
 variable "postgres_password" {
     description = "Mot de passe PostgreSQL"
     type        = string
-    default     = "1Intuitionniste" # change password before deploying
+    default     = "postgres_password" # change password before deploying
     # sensitive = true
 }
 
