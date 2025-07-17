@@ -6,7 +6,7 @@ This repository offers a reference architecture to integrate Machine Learning mo
 
 Moreover, it supports triggering various asynchronous processes in near real-time, such as updating monitoring dashboards and running data enrichment routines to further strengthen fraud detection capabilities.
 
-For this, several Azure resources are used. Below the Reference Architecture:
+For this, several AWS resources are used. Below the Reference Architecture:
 
 ![Reference Architecture](./assets/test-e2e-serverless-aws.drawio.png)
 
