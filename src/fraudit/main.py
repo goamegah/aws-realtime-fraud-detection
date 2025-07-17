@@ -88,7 +88,7 @@ def main():
         .option("kinesis.region", config.AWS_REGION)
         .option("kinesis.awsAccessKeyId", config.AWS_ID_ACCESS_KEY)
         .option("kinesis.awsSecretKey", config.AWS_SECRET_ACCESS_KEY)
-        .option("kinesis.startingposition", "TRIM_HORIZON")
+        .option("kinesis.startingposition", "LATEST") # or "TRIM_HORIZON"
         .option("kinesis.endpointUrl", config.KINESIS_ENDPOINT)
         .load()
     )

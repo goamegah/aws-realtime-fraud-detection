@@ -10,7 +10,6 @@ AWS_REGION = os.environ.get("AWS_REGION")
 SECRET_ID = os.environ.get("SECRETS_MANAGER_ID")  # Optionnel, utilisé en prod
 KINESIS_ENDPOINT = f"https://kinesis.{AWS_REGION}.amazonaws.com"
 
-
 AWS_ID_ACCESS_KEY = os.environ.get("AWS_ID_ACCESS_KEY")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
