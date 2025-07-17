@@ -54,7 +54,7 @@ def get_anomaly_prediction(data):
 
 
 def get_fraud_prediction(data, threshold=0.5):
-    endpoint = f"{SOLUTION_PREFIX}-xgb-endpoint"
+    endpoint = f"{SOLUTION_PREFIX}-xgb-smote-endpoint"
     response = sagemaker_runtime.invoke_endpoint(
         EndpointName=endpoint,
         ContentType='text/csv',
