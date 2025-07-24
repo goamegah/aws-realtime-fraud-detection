@@ -1,35 +1,46 @@
-# resource "aws_glue_job" "fraudit_streaming_job" {
-#     name     = "fraudit-streaming-job"
-#     role_arn = aws_iam_role.glue-role.arn
+resource "aws_glue_job" "fraudit_streaming_job" {
+    name     = "fraudit-streaming-job"
+    role_arn = aws_iam_role.glue-role.arn
 
-#     command {
-#         script_location = "s3://${aws_s3_bucket.fraud_data_bucket.bucket}/spark-jobs/glue_job.py"
-#         python_version  = "3"
-#     }
+    command {
+        script_location = "s3://${aws_s3_bucket.spark_streaming_bucket.bucket}/spark-jobs/glue_job.py"
+        python_version  = "3"
+    }
+    
+    glue_version = "4.0"
+    max_capacity = 2
+    
+    default_arguments = {
+        "--job-language"                     = "python"
+        "--additional-python-modules"        = "s3://${aws_s3_bucket.spark_streaming_bucket.bucket}/wheel/fraudit-0.0.1-py3-none-any.whl"
+        "--python-modules-installer-option"  = "--upgrade"
+        # "--extra-jars"                       = "s3://${aws_s3_bucket.spark_streaming_bucket.bucket}/jars/spark-streaming-sql-kinesis-connector_2.12-1.0.0.jar"
 
-#     glue_version      = "4.0"
-#     number_of_workers = 2
-#     worker_type       = "G.1X" # plus optimisé pour Spark que "Standard"
+        # Variables PostgreSQL
+        "--postgres_host"                    = aws_db_instance.fraudit_postgres.address
+        "--postgres_port"                    = aws_db_instance.fraudit_postgres.port
+        "--postgres_user"                    = var.postgres_user
+        "--postgres_password"                = var.postgres_password
+        "--postgres_db"                      = var.postgres_db
 
-#     default_arguments = {
-#         "--job-language"                     = "python"
-#         "--additional-python-modules"        = "s3://${aws_s3_bucket.fraud_data_bucket.bucket}/wheel/fraudit-0.0.1-py3-none-any.whl"
-#         "--python-modules-installer-option"  = "--upgrade"
+        # Kinesis
+        "--kinesis_stream"                   = aws_kinesis_stream.fraud_predictions_stream.name
+        "--kinesis_endpoint"                 = "https://kinesis.${var.aws_region}.amazonaws.com"
+        "--aws_region"                       = var.aws_region
 
-#         # Tes paramètres métiers
-#         "--kinesis_stream"                   = aws_kinesis_stream.fraud_predictions_stream.name
-#         "--secrets_manager_id"               = aws_secretsmanager_secret.rds_credentials.name
-#         "--aws_region"                       = var.aws_region
+        # Checkpoint S3 - utiliser le bucket de données pour les checkpoints
+        "--s3_checkpoint_bucket"             = aws_s3_bucket.spark_streaming_bucket.bucket
 
-#         # Logs & monitoring
-#         "--enable-continuous-cloudwatch-log" = "true"
-#         "--enable-job-insights"              = "true"
-#         "--enable-metrics"                   = "true"
-#         "--enable-spark-ui"                  = "true"
-#     }
+        # Monitoring
+        "--enable-continuous-cloudwatch-log" = "true"
+        "--enable-job-insights"              = "true"
+        "--enable-metrics"                   = "true"
+        "--enable-spark-ui"                  = "true"
+        "--enable-auto-scaling"              = "true"
+    }
 
-#     tags = {
-#         Project     = "fraud-detection"
-#         Environment = "dev"
-#     }
-# }
+    tags = {
+        Project     = "fraud-detection"
+        Environment = "dev"
+    }
+}

@@ -27,6 +27,17 @@ resource "aws_s3_bucket_lifecycle_configuration" "data_bucket_lifecycle" {
 }
 
 
+resource "aws_s3_bucket" "spark_streaming_bucket" {
+    bucket        = "credit-card-fraud-detection-spark-streaming-bucket"
+    force_destroy = true
+
+    tags = {
+        Environment = "dev"
+        Project     = "fraud-detection"
+    }
+}
+
+
 ## === S3 Bucket for Fraud EMR Logs ===
 # resource "aws_s3_bucket" "fraud_logs_bucket" {
 #   bucket        = "fraud-detection-emr-logs-bucket"

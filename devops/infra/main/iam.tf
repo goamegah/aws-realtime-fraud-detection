@@ -33,78 +33,105 @@ resource "aws_iam_role_policy" "lambda_permissions" {
     })
 }
 
-# # ============ Glue IAM Role and Policy  ===========
-# data "aws_iam_policy_document" "glue_assume_role_policy_document" {
-#     statement {
-#         actions = ["sts:AssumeRole"]
-#         principals {
-#             type        = "Service"
-#             identifiers = ["glue.amazonaws.com"]
-#         }
-#     }
-# }
-# data "aws_iam_policy_document" "glue_role_policy_document" {
-#     statement {
-#         sid     = "S3Access"
-#         actions = [
-#             "s3:GetObject",
-#             "s3:PutObject",
-#             "s3:ListBucket"
-#         ]
-#         resources = [
-#             "${aws_s3_bucket.fraud_data_bucket.arn}",
-#             "${aws_s3_bucket.fraud_data_bucket.arn}/*"
-#         ]
-#         effect = "Allow"
-#     }
 
-#     statement {
-#         sid     = "KinesisAccess"
-#         actions = [
-#             "kinesis:GetRecords",
-#             "kinesis:GetShardIterator",
-#             "kinesis:DescribeStream",
-#             "kinesis:ListStreams"
-#         ]
-#         resources = [
-#             aws_kinesis_stream.fraud_predictions_stream.arn
-#         ]
-#         effect = "Allow"
-#     }
+# ============ Glue IAM Role and Policy  ===========
+data "aws_iam_policy_document" "glue_assume_role_policy_document" {
+    statement {
+        actions = ["sts:AssumeRole"]
+        principals {
+            type        = "Service"
+            identifiers = ["glue.amazonaws.com"]
+        }
+    }
+}
 
-#     statement {
-#         sid     = "SecretsManagerAccess"
-#         actions = [
-#             "secretsmanager:GetSecretValue"
-#         ]
-#         resources = [
-#             aws_secretsmanager_secret.rds_credentials.arn
-#         ]
-#         effect = "Allow"
-#     }
+resource "aws_iam_role" "glue-role" {
+    name               = "fraudit-glue-role"
+    assume_role_policy = data.aws_iam_policy_document.glue_assume_role_policy_document.json
+}
 
-#     statement {
-#         sid     = "CloudWatchAndLogs"
-#         actions = [
-#             "logs:CreateLogGroup",
-#             "logs:CreateLogStream",
-#             "logs:PutLogEvents",
-#             "cloudwatch:PutMetricData"
-#         ]
-#         resources = ["*"]
-#         effect = "Allow"
-#     }
-# }
-# resource "aws_iam_policy" "glue_policy" {
-#     name   = "glue_policy"
-#     path   = "/"
-#     policy = data.aws_iam_policy_document.glue_role_policy_document.json
-# }
-# resource "aws_iam_role" "glue-role" {
-#     name               = "glue_role"
-#     assume_role_policy = data.aws_iam_policy_document.glue_assume_role_policy_document.json
-# }
-# resource "aws_iam_role_policy_attachment" "glue_policy_attachment" {
-#     role       = aws_iam_role.glue-role.name
-#     policy_arn = aws_iam_policy.glue_policy.arn
-# }
+# Politique AWS managée pour Glue
+resource "aws_iam_role_policy_attachment" "glue_service_role" {
+    role       = aws_iam_role.glue-role.name
+    policy_arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
+}
+
+# Politique personnalisée pour vos ressources
+data "aws_iam_policy_document" "glue_role_policy_document" {
+    statement {
+        sid     = "S3Access"
+        actions = [
+            "s3:GetObject",
+            "s3:PutObject",
+            "s3:DeleteObject",
+            "s3:ListBucket"
+        ]
+        resources = [
+            "${aws_s3_bucket.fraud_data_bucket.arn}",
+            "${aws_s3_bucket.fraud_data_bucket.arn}/*",
+            "${aws_s3_bucket.spark_streaming_bucket.arn}",
+            "${aws_s3_bucket.spark_streaming_bucket.arn}/*"
+        ]
+        effect = "Allow"
+    }
+
+    statement {
+        sid     = "KinesisAccess"
+        actions = [
+            "kinesis:SubscribeToShard",
+            "kinesis:DescribeStreamSummary",
+            "kinesis:DescribeStream",
+            "kinesis:ListShards",
+            "kinesis:DescribeStreamConsumer",
+            "kinesis:GetShardIterator",
+            "kinesis:GetRecords",
+            "kinesis:ListStreamConsumers",
+            "kinesis:RegisterStreamConsumer",
+            "kinesis:DeregisterStreamConsumer"
+        ]
+        resources = [
+            aws_kinesis_stream.fraud_predictions_stream.arn
+        ]
+        effect = "Allow"
+    }
+
+    statement {
+        sid     = "CloudWatchAndLogs"
+        actions = [
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+            "logs:PutLogEvents",
+            "cloudwatch:PutMetricData"
+        ]
+        resources = ["*"]
+        effect = "Allow"
+    }
+
+    statement {
+        sid     = "VPCAccess"
+        actions = [
+            "ec2:CreateNetworkInterface",
+            "ec2:DeleteNetworkInterface",
+            "ec2:DescribeNetworkInterfaces",
+            "ec2:DescribeVpcs",
+            "ec2:DescribeSubnets",
+            "ec2:DescribeSecurityGroups",
+            "ec2:DescribeRouteTables",
+            "ec2:CreateTags",
+            "ec2:DeleteTags"
+        ]
+        resources = ["*"]
+        effect = "Allow"
+    }
+}
+
+resource "aws_iam_policy" "glue_policy" {
+    name   = "fraudit-glue-policy"
+    path   = "/"
+    policy = data.aws_iam_policy_document.glue_role_policy_document.json
+}
+
+resource "aws_iam_role_policy_attachment" "glue_policy_attachment" {
+    role       = aws_iam_role.glue-role.name
+    policy_arn = aws_iam_policy.glue_policy.arn
+}
