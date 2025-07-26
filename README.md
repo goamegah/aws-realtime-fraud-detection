@@ -8,7 +8,7 @@ Moreover, it supports triggering various asynchronous processes in near real-tim
 
 For this, several AWS resources are used. Below the Reference Architecture:
 
-![Reference Architecture](./assets/arch.png)
+![Reference Architecture](./assets/aws-arch.png)
 
 
 ## Developer Setup

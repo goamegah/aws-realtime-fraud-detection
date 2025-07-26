@@ -1,2 +1,3 @@
 pyspark>=3.5.5
 awsglue-dev>=2021.12.30
+psycopg2-binary >= 2.9.10
