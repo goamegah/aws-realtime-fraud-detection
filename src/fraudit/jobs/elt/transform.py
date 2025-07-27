@@ -1,22 +1,47 @@
 # fraudit/jobs/elt/transform.py
 
-from pyspark.sql.functions import col
+from pyspark.sql.functions import col, when, regexp_replace, upper, trim
+from pyspark.sql.types import TimestampType
 
 def transform_df(df):
-    return df.select(
-        col("timestamp").cast("timestamp"),
+    """
+    Apply business transformations to the fraud detection data.
+    
+    Args:
+        df: Spark DataFrame with flattened columns (not nested)
+        
+    Returns:
+        Transformed Spark DataFrame
+    """
+    
+    # Convert timestamp string to proper timestamp type
+    df = df.withColumn("timestamp", col("timestamp").cast(TimestampType()))
+    
+    # Data quality transformations
+    transformed_df = df.select(
+        col("timestamp"),
         col("user_id"),
         col("source"),
-        col("fraud_prediction").cast("int"),
-        col("fraud_proba").cast("float"),
-        col("anomaly_score").cast("float"),
+        col("fraud_prediction"),
+        col("fraud_proba"),
+        col("anomaly_score"),
         col("ip_address"),
-        col("device_info.device_type").alias("device_type"),
-        col("device_info.os_version").alias("os_version"),
-        col("device_info.app_version").alias("app_version"),
-        col("geo.country").alias("country"),
-        col("geo.region").alias("region"),
-        col("geo.city").alias("city"),
-        col("geo.latitude").cast("double").alias("latitude"),
-        col("geo.longitude").cast("double").alias("longitude")
+        # Device info columns (already flattened)
+        col("device_type"),
+        col("os_version"),
+        col("app_version"),
+        # Geo columns (already flattened)
+        upper(trim(col("country"))).alias("country"),  # Standardize country codes
+        trim(col("region")).alias("region"),
+        trim(col("city")).alias("city"),
+        col("latitude"),
+        col("longitude"),
+        col("processed_at")
+    ).where(
+        # Basic data quality filters
+        col("user_id").isNotNull() & 
+        col("timestamp").isNotNull() & 
+        col("fraud_prediction").isNotNull()
     )
+    
+    return transformed_df

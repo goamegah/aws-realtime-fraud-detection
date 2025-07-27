@@ -1,26 +1,30 @@
 # fraudit/jobs/elt/schema.py
 
-from pyspark.sql.types import *
+from pyspark.sql.types import StructType, StructField, StringType, DoubleType, IntegerType, FloatType
 
 def get_stream_schema():
+    """
+    Returns the schema for the Kinesis stream JSON data.
+    This matches the actual JSON structure from your Kinesis stream.
+    """
     return StructType([
-        StructField("timestamp", StringType()),
-        StructField("user_id", StringType()),
-        StructField("source", StringType()),
-        StructField("fraud_prediction", IntegerType()),
-        StructField("fraud_proba", FloatType()),
-        StructField("anomaly_score", FloatType()),
-        StructField("ip_address", StringType()),
+        StructField("timestamp", StringType(), True),
+        StructField("user_id", StringType(), True),
+        StructField("source", StringType(), True),
+        StructField("fraud_prediction", IntegerType(), True),
+        StructField("fraud_proba", FloatType(), True),
+        StructField("anomaly_score", FloatType(), True),
+        StructField("ip_address", StringType(), True),
         StructField("device_info", StructType([
-            StructField("device_type", StringType()),
-            StructField("os_version", StringType()),
-            StructField("app_version", StringType())
-        ])),
+            StructField("device_type", StringType(), True),
+            StructField("os_version", StringType(), True),
+            StructField("app_version", StringType(), True)
+        ]), True),
         StructField("geo", StructType([
-            StructField("country", StringType()),
-            StructField("region", StringType()),
-            StructField("city", StringType()),
-            StructField("latitude", DoubleType()),
-            StructField("longitude", DoubleType())
-        ]))
+            StructField("country", StringType(), True),
+            StructField("region", StringType(), True),
+            StructField("city", StringType(), True),
+            StructField("latitude", DoubleType(), True),
+            StructField("longitude", DoubleType(), True)
+        ]), True)
     ])

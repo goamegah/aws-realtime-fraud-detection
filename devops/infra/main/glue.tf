@@ -14,7 +14,7 @@ resource "aws_glue_job" "fraudit_streaming_job" {
         "--job-language"                     = "python"
         "--additional-python-modules"        = "s3://${aws_s3_bucket.spark_streaming_bucket.bucket}/wheel/fraudit-0.0.1-py3-none-any.whl"
         "--python-modules-installer-option"  = "--upgrade"
-        # "--extra-jars"                       = "s3://${aws_s3_bucket.spark_streaming_bucket.bucket}/jars/spark-streaming-sql-kinesis-connector_2.12-1.0.0.jar"
+        "--extra-jars"                       = "s3://${aws_s3_bucket.spark_streaming_bucket.bucket}/jars/spark-streaming-sql-kinesis-connector_2.12-1.0.0.jar"
 
         # Variables PostgreSQL
         "--postgres_host"                    = aws_db_instance.fraudit_postgres.address

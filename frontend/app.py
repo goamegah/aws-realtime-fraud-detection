@@ -29,12 +29,12 @@ st.set_page_config(layout="wide", page_title="📊 Fraud Detection Dashboard")
 st.title("🔍 Real-Time Credit Card Fraud Dashboard")
 
 # Récupération des données
-query = "SELECT * FROM fraud_predictions ORDER BY created_at DESC LIMIT 1000;"
+query = "SELECT * FROM fraud_predictions ORDER BY processed_at DESC LIMIT 1000;"
 df = pd.read_sql(query, engine)
 
 # Transformation
 df["timestamp"] = pd.to_datetime(df["timestamp"])
-df["created_at"] = pd.to_datetime(df["created_at"])
+df["processed_at"] = pd.to_datetime(df["processed_at"])
 df["is_fraud"] = df["fraud_prediction"].astype(bool)
 
 # Zone de filtres
@@ -64,7 +64,7 @@ col4.metric("Proba fraude moyenne", f"{avg_proba:.2f}%")
 
 # Graphiques temporels
 st.markdown("### ⏳ Transactions dans le temps")
-time_agg = df.groupby(pd.Grouper(key="timestamp", freq="1min")).agg(fraudes=("is_fraud", "sum"), total=("id", "count")).reset_index()
+time_agg = df.groupby(pd.Grouper(key="timestamp", freq="1min")).agg(fraudes=("is_fraud", "sum"), total=("user_id", "count")).reset_index()
 fig = px.line(time_agg, x="timestamp", y=["fraudes", "total"], labels={"value": "Nombre", "timestamp": "Heure"}, title="Volume de transactions & fraudes")
 st.plotly_chart(fig, use_container_width=True)
 
@@ -75,6 +75,6 @@ st.map(df[["latitude", "longitude"]])
 # Tableau
 st.markdown("### 📄 Dernières transactions")
 st.dataframe(df[[
-    "created_at", "user_id", "source", "country", "device_type",
+    "processed_at", "user_id", "source", "country", "device_type",
     "fraud_prediction", "fraud_proba", "anomaly_score"
 ]].head(50))
