@@ -59,3 +59,17 @@ variable "postgres_port" {
 #   type        = number
 #   default     = 2
 # }
+
+
+# Kinesis stream configuration
+variable "kinesis_stream_name" {
+    description = "Kinesis Data Stream name for fraud predictions"
+    type        = string
+    default     = "fraud-predictions-stream"
+}
+
+variable "kinesis_shard_count" {
+    description = "Number of shards for the Kinesis stream"
+    type        = number
+    default     = 4
+}

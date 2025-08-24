@@ -6,17 +6,15 @@ readme = "README.md"
 requires-python = ">=3.10"
 authors = [{name = "Godwin AMEGAH", email = "komlan.godwin.amegah@gmail.com"}]
 dependencies = [
-    # Glue dependencies
+    # Core dependencies
+    "pyspark>=3.5.5",
+    "awsglue-dev>=2021.12.30",
+    "psycopg2-binary>=2.9.6"
 ]
 
 [project.optional-dependencies]
+# Development dependencies
 dev = [
-    "pyspark >=3.5.5",
-    "awsglue-dev>=2021.12.30",
-    "psycopg2-binary >=2.9.6"
-]
-
-test = [
     "pytest",
     "pylint",
     "pytest-mock",
@@ -25,9 +23,40 @@ test = [
     "mock"
 ]
 
+# AWS Chalice dependencies
+chalice = [
+    "boto3",
+    "chalice"
+]
+
+# Data processing scripts dependencies
+scripts = [
+    "requests",
+    "pandas",
+    "numpy",
+    "scipy",
+    "scikit-learn",
+    "python-dotenv"
+]
+
+# All dependencies combined
+all = [
+    "pyspark>=3.5.5",
+    "awsglue-dev>=2021.12.30",
+    # "psycopg2-binary>=2.9.6",
+    "boto3",
+    "chalice",
+    "requests",
+    "pandas",
+    "numpy",
+    "scipy",
+    "scikit-learn",
+    "python-dotenv"
+]
+
 
 [project.scripts]
-fraudit = "fraudit.main:main"
+main = "fraudit.main:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
