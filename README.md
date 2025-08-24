@@ -86,7 +86,7 @@ $ python -m pip install -e .[scripts]
             "api_gateway_stage": "api",
             "manage_iam_role": false,
             "iam_role_arn": "<use_terraform_output_arn_here>",
-            "environment_variables": {                      // used in app.py
+            "environment_variables": {
                 "solution_prefix": "fraud-detection",
                 "stream_name": "fraud-predictions-stream",
                 "aws_region": "eu-west-1"
