@@ -131,11 +131,11 @@ $ chalice deploy
 }
 ```
 
-### Configuration (.env)
+### Environment variables
 Create a `.env` file at the repo root (do not commit secrets).
 **Tip**: use a `.env.example` without secrets in the repo and keep your .env locally.
 
-### Run the streaming job locally or on AWS Glue
+### Spark Streaming job
 #### Glue
 
 1. Install the build package
@@ -151,7 +151,7 @@ $ python3 -m build
 ```
 This will result in a wheel file `fraudit-0.0.1-py3-none-any.whl` in the `dist/` directory.
 
-3. Deploy the **job**, **wheel** and **Kinesis connector for Spark** to their respective AWS S3 for Glue 
+3. Deploy the **job**, **wheel** and **Kinesis connector for Spark** to their respective **AWS S3** for Glue 
 
     **Tip:** See devops/infra/main/glue.tf `--additional-python-modules` and `--extra-jars` **Terraform options** 
    for more details.
