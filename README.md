@@ -136,7 +136,7 @@ Create a `.env` file at the repo root (do not commit secrets).
 **Tip**: use a `.env.example` without secrets in the repo and keep your .env locally.
 
 ### Spark Streaming job
-#### Glue
+#### Glue Job Deployment
 
 1. Install the build package
 
@@ -167,9 +167,10 @@ $ aws s3 cp src/resources/spark-streaming-sql-kinesis-connector_2.12-1.0.0 s3://
 4. Once the artifacts are uploaded, you can start the Glue job from the console, ensuring the default arguments defined 
 in `glue.tf` are set.
 
-#### Local
+#### Local Job Running
 
 1. Make sure environment variables are set in `.env`.
+    - Download the Kinesis connector **JAR** for Spark: https://github.com/awslabs/spark-sql-kinesis-connector
     - Place the JAR and/or set KINESIS_CONNECTOR_PATH to: `src/resources/spark-streaming-sql-kinesis-connector_2.12-1.0.0.jar`
 2. Run the job
 
