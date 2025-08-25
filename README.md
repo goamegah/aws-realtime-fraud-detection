@@ -143,11 +143,14 @@ Create a `.env` file at the repo root (do not commit secrets).
 ```shell
 $ python3 -m pip install build
 ```
+
 2. Package the project (wheel)
+
 ```shell
 $ python3 -m build
 ```
 This will result in a wheel file `fraudit-0.0.1-py3-none-any.whl` in the `dist/` directory.
+
 3. Deploy the **job**, **wheel** and **Kinesis connector for Spark** to their respective AWS S3 for Glue 
 
     **Tip:** See devops/infra/main/glue.tf `--additional-python-modules` and `--extra-jars` **Terraform options** 
@@ -158,9 +161,9 @@ This will result in a wheel file `fraudit-0.0.1-py3-none-any.whl` in the `dist/`
 ```shell
 $ aws s3 cp dist/fraudit-0.0.1-py3-none-any.whl s3://credit-card-fraud-detection-spark-streaming-bucket/wheel/fraudit-0.0.1-py3-none-any.whl
 $ aws s3 cp src/fraudit/glue_job.py s3://credit-card-fraud-detection-spark-streaming-bucket/spark-jobs/
-$ aws s3 cp src/resources/spark-streaming-sql-kinesis-connector_2.12-1.0.0 s3://credit-card-fraud-detection-spark-streaming-bucket/jars/spark-streaming-sql-kinesis-connector_2.12-1.0.0 
-
+$ aws s3 cp src/resources/spark-streaming-sql-kinesis-connector_2.12-1.0.0 s3://credit-card-fraud-detection-spark-streaming-bucket/jars/spark-streaming-sql-kinesis-connector_2.12-1.0.0
 ```
+
 4. Once the artifacts are uploaded, you can start the Glue job from the console, ensuring the default arguments defined 
 in `glue.tf` are set.
 
@@ -178,6 +181,7 @@ appends into the fraud_predictions table.
 
 ## Simulated data generation
 Prerequisites: .env with CHALICE_API_URL and dataset/creditcard.csv present.
+
 ```bash
 $ python -m pip install -e .[scripts]
 $ python scripts/generate_data.py
