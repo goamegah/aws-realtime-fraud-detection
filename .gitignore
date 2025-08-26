@@ -233,7 +233,7 @@ config.json
 
 # local pyspark
 checkpoints/
-resources/
+# resources/
 
 *.xml
 *.iml
