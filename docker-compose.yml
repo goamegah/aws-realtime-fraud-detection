@@ -1,9 +1,9 @@
 services:
   dashboard:
     build:
-      context: ./frontend
+      context: app/streamlit
     volumes:
-      - ./frontend:/app
+      - ./streamlit:/app
     ports:
       - "8501:8501"
     env_file:

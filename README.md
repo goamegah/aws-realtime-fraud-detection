@@ -71,7 +71,6 @@ $ python -m pip install -e .[scripts]
 ```
 
 ### Inference API (Chalice)
-- Code: `app/chalice/app.py`
 - Route: POST /predict
 
 #### Setup
@@ -95,8 +94,7 @@ $ python -m pip install -e .[scripts]
     }
 }
 ```
-
-
+2. (Optional) Test Chalice deployment locally
 
 ```shell
 $ chalice local --port 8000 # Optional -> urls: http://localhost:8000/
@@ -168,11 +166,11 @@ $ aws s3 cp src/resources/spark-streaming-sql-kinesis-connector_2.12-1.0.0 s3://
 in `glue.tf` are set.
 
 #### Local Job Running
-
-1. Make sure environment variables are set in `.env`.
+1. Download and setup Apache Spark locally. To do so, refer to the [spark installation guide](docs/spark.md).
+2. Make sure environment variables are set in `.env`.
     - Download the Kinesis connector **JAR** for Spark: https://github.com/awslabs/spark-sql-kinesis-connector
     - Place the JAR and/or set KINESIS_CONNECTOR_PATH to: `src/resources/spark-streaming-sql-kinesis-connector_2.12-1.0.0.jar`
-2. Run the job
+3. Run the job
 
 ```bash
 $ python fraudit.main
@@ -197,11 +195,23 @@ $ docker compose up dashboard
 ```
 - Or locally:
 ```bash
-$ cd frontend
+$ cd streamlit
 $ pip install -r requirements.txt
 $ streamlit run app.py
 ```
 Ensure POSTGRES_HOST/DB/USER/PASSWORD/PORT are configured.
+
+
+## Clean up
+- Destroy the infrastructure:
+```shell
+$ cd devops/infra/main && terraform destroy
+```
+- Delete the Chalice API:
+```shell
+$ cd app/chalice && chalice delete
+
+```
 
 ## Troubleshooting
 - Error "Missing required environment variables" when starting locally: check your .env (see variables above).
