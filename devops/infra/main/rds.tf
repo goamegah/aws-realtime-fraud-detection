@@ -1,9 +1,9 @@
-# Utilise le VPC par défaut AWS
+# Uses AWS default VPC
 data "aws_vpc" "default" {
     default = true
 }
 
-# Récupérer les subnets du VPC par défaut
+# Get subnets from default VPC
 data "aws_subnets" "default" {
     filter {
         name   = "vpc-id"
@@ -11,13 +11,13 @@ data "aws_subnets" "default" {
     }
 }
 
-# Security Group simplifié pour RDS (accès depuis Internet pour Glue)
+# Simplified Security Group for RDS (Internet access for Glue)
 resource "aws_security_group" "rds_sg" {
     name        = "fraudit-rds-sg"
     description = "Allow PostgreSQL access"
     vpc_id      = data.aws_vpc.default.id
 
-    # Accès PostgreSQL depuis Internet (pour Glue sans VPC)
+    # PostgreSQL access from Internet (for Glue without VPC)
     ingress {
         from_port   = var.postgres_port
         to_port     = var.postgres_port
@@ -38,7 +38,7 @@ resource "aws_security_group" "rds_sg" {
     }
 }
 
-# Groupe de sous-réseaux pour RDS
+# Subnet group for RDS
 resource "aws_db_subnet_group" "fraudit_subnet_group" {
     name       = "fraudit-subnet-group"
     subnet_ids = data.aws_subnets.default.ids
@@ -48,37 +48,37 @@ resource "aws_db_subnet_group" "fraudit_subnet_group" {
     }
 }
 
-# Instance PostgreSQL RDS
+# PostgreSQL RDS Instance
 resource "aws_db_instance" "fraudit_postgres" {
     identifier            = "fraudit-postgres-db"
     engine                = "postgres"
-    engine_version        = "17.5"  # Version supportée par AWS RDS
+    engine_version        = "17.5" # Version supported by AWS RDS
     instance_class        = "db.t3.micro"
     allocated_storage     = 20
     max_allocated_storage = 100
     storage_type          = "gp2"
 
-    db_name               = var.postgres_db
-    username              = var.postgres_user
-    password              = var.postgres_password
-    port                  = var.postgres_port
+    db_name  = var.postgres_db
+    username = var.postgres_user
+    password = var.postgres_password
+    port     = var.postgres_port
 
-    # Configuration réseau
+    # Network configuration
     db_subnet_group_name   = aws_db_subnet_group.fraudit_subnet_group.name
     vpc_security_group_ids = [aws_security_group.rds_sg.id]
-    publicly_accessible    = true  # Nécessaire pour l'accès depuis Glue sans VPC
+    publicly_accessible    = true # Required for access from Glue without VPC
 
-    # Configuration de sauvegarde
+    # Backup configuration
     backup_retention_period = 7
-    backup_window          = "03:00-04:00"
-    maintenance_window     = "sun:04:00-sun:05:00"
+    backup_window           = "03:00-04:00"
+    maintenance_window      = "sun:04:00-sun:05:00"
 
-    # Configuration pour le développement
-    skip_final_snapshot   = true
-    deletion_protection   = false
-    apply_immediately     = true
+    # Development configuration
+    skip_final_snapshot = true
+    deletion_protection = false
+    apply_immediately   = true
 
-    # Monitoring désactivé pour simplifier
+    # Monitoring disabled for simplicity
     performance_insights_enabled = false
     monitoring_interval          = 0
 
