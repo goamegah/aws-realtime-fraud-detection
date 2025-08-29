@@ -11,7 +11,7 @@ Usage examples:
 - python -m devops.deploy.cli upload --bucket my-bucket --region eu-west-1
 - python -m devops.deploy.cli deploy --bucket my-bucket --prefix fraudit
 
-Reads defaults from .env: SOLUTIONS_S3_BUCKET, SOLUTION_NAME, AWS_REGION
+Reads defaults from .env: SPARK_SOLUTIONS_S3_BUCKET, SPARK_SOLUTION_NAME, AWS_REGION
 """
 from __future__ import annotations
 
