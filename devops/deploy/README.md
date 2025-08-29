@@ -1,4 +1,4 @@
-# DevOps: Glue Deployment Utility
+# Glue Deployment Utility
 
 This package provides a small CLI to automate deployment of AWS Glue artifacts to S3:
 - Project wheel (.whl)
@@ -33,7 +33,7 @@ Options:
 - --job-path: Local Glue job script (default src/fraudit/glue_job.py)
 - --jar-path: Local Kinesis connector JAR (default src/resources/spark-streaming-sql-kinesis-connector_2.12-1.0.0.jar)
 - --jars-prefix, --jobs-prefix, --wheels-prefix: S3 key prefixes (defaults: jars/, spark-jobs/, wheel/)
-- --jar-url: If provided and the JAR is missing locally, it will be downloaded before upload
+- --jar-url: If provided and the Kinesis connector JAR is missing locally, it will be downloaded before upload
 - --profile: AWS CLI profile to use
 
 Example using a JAR download URL:
