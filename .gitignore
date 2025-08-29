@@ -218,7 +218,6 @@ testing/
 
 
 # local files
-dataset/
 tests/
 scriptenv/
 
