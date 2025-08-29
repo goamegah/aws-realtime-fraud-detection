@@ -45,4 +45,4 @@ Example using a JAR download URL:
 ## Notes
 - Boto3 follows the standard credential chain: env vars, profiles, EC2/Glued roles, etc. You can force `--profile`.
 - This tool only uploads artifacts to S3. Creating/updating the Glue job is handled by Terraform in `devops/infra/main`, where the `script_location`, `--additional-python-modules`, and `--extra-jars` reference these S3 paths.
-- By default, keys are prefixed with your solution name (SOLUTION_NAME in .env). Use `--no-solution-prefix` to disable.
+- By default, keys are prefixed with your solution name (SPARK_SOLUTION_NAME in .env). Use `--no-solution-prefix` to disable.
