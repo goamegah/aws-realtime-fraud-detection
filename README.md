@@ -219,7 +219,6 @@ $ streamlit run app.py
 ```
 Ensure POSTGRES_HOST/DB/USER/PASSWORD/PORT are configured.
 
-
 ## Clean up
 - Destroy the infrastructure:
 ```shell
@@ -228,7 +227,6 @@ $ cd devops/infra/main && terraform destroy
 - Delete the Chalice API:
 ```shell
 $ cd app/chalice && chalice delete
-
 ```
 
 ## Troubleshooting
