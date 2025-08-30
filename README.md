@@ -23,8 +23,8 @@ Architecture overview:
 ![Architecture](./assets/flowtrack-e2e-serverless-aws.png)
 
 Useful links:
-- Detailed [architecture documentation](docs/architecture.md)
-- Chalice [documentation](https://chalice.readthedocs.io/en/latest/)
+- Our detailed [architecture documentation](docs/architecture.md)
+- AWS Chalice [documentation](https://chalice.readthedocs.io/en/latest/)
 
 ## Project structure
 
@@ -83,6 +83,10 @@ $ python -m pip install -e .[chalice]
 $ python -m pip install -e .[scripts]
 ```
 
+### AWS SageMaker
+Sagemaker is used to train and deploy the ML models. The training and deployment notebooks are located in the 
+`sagemaker/` folder.
+
 ### Inference API (Chalice)
 - Route: POST /predict
 
@@ -97,7 +101,7 @@ $ python -m pip install -e .[scripts]
         "dev": {
             "api_gateway_stage": "api",
             "manage_iam_role": false,
-            "iam_role_arn": "<use_terraform_output_arn_here>",
+            "iam_role_arn": "<terraform_lambda_exec_role_arn_output>",
             "environment_variables": {
                 "solution_prefix": "fraud-detection",
                 "stream_name": "fraud-predictions-stream",
