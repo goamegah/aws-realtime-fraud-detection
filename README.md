@@ -24,6 +24,7 @@ Architecture overview:
 
 Useful links:
 - Detailed [architecture documentation](docs/architecture.md)
+- Chalice [documentation](https://chalice.readthedocs.io/en/latest/)
 
 ## Project structure
 
