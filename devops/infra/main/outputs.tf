@@ -21,37 +21,33 @@ output "rds_postgres_port" {
     value       = aws_db_instance.fraudit_postgres.port
 }
 
-##  ==============================
+output "spark_streaming_bucket_name" {
+    description = "Bucket used to store wheel, jars, and glue job script"
+    value = aws_s3_bucket.spark_streaming_bucket.bucket
+}
 
-# output "rds_endpoint" {
-#   description = "Adresse de la base PostgreSQL"
-#   value       = aws_db_instance.fraudit_postgres.address
-# }
-
-# output "rds_secret_name" {
-#   description = "Nom du secret PostgreSQL"
-#   value       = aws_secretsmanager_secret.rds_credentials.name
-# }
-
+output "fraud_data_bucket" {
+    value = aws_s3_bucket.fraud_data_bucket.bucket
+    description = "Bucket used to store credit card fraud dataset"
+}
 
 ##  =============================
-
 # output "s3_bucket_name" {
-#   description = "Nom du bucket S3 pour les résultats de prédictions"
+#   description = "Name of the S3 bucket for prediction results" 
 #   value       = aws_s3_bucket.fraud_predictions_bucket.bucket
 # }
 
 # output "glue_database_name" {
-#   description = "Nom de la base de données Glue"
+#   description = "Name of the Glue database"
 #   value       = aws_glue_catalog_database.fraud_db.name
 # }
 
 # output "glue_crawler_name" {
-#   description = "Nom du crawler Glue pour les fichiers JSON"
+#   description = "Name of the Glue crawler for JSON files"
 #   value       = aws_glue_crawler.fraud_json_crawler.name
 # }
 
 # output "firehose_stream_name" {
-#   description = "Nom du flux Kinesis Firehose pour les prédictions"
+#   description = "Name of the Kinesis Firehose stream for predictions"
 #   value       = aws_kinesis_firehose_delivery_stream.fraud_predictions_stream.name
 # }
