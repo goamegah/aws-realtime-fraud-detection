@@ -1,10 +1,22 @@
 # Real-time Fraud Detection on AWS
+
 Detecting potential fraud in financial systems is a major challenge for organizations worldwide. Building robust 
 solutions that enable real-time actions is essential for companies aiming to provide greater security to their 
 customers during financial transactions.
 
-This repository offers a reference architecture to integrate ML models into a streaming fraud detection platform 
-(Kinesis → Spark/Glue → PostgreSQL) with an inference API (Chalice/SageMaker) and a dashboard.
+This repository demonstrates a complete machine learning pipeline for credit card fraud detection using the 
+[Kaggle Credit Card Fraud Detection dataset](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud), which contains 
+284,807 European cardholder transactions from 2013 (including 492 fraudulent cases) with 28 PCA-transformed features 
+plus original Amount and Time variables. 
+
+The project showcases a production-ready streaming architecture that integrates Amazon SageMaker for training 
+both supervised and unsupervised ML models and deploying them as managed endpoints. The complete AWS solution includes:
+
+
+- Training of supervised and unsupervised ML models and deployment to a managed-endpoint using Amazon SageMaker
+- REST API deployment via Chalice (Lambda + API Gateway)
+- Streaming data pipeline (Kinesis → Spark/Glue → RDS)
+- (Optional) Interactive dashboard for real-time fraud monitoring and analysis.
 
 Architecture overview:
 
