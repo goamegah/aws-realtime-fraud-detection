@@ -226,7 +226,6 @@ deployment/
 deployments/
 deployed/
 chlenv/
-config.json
 
 # custom terraform files
 *alt
