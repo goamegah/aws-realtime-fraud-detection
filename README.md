@@ -30,11 +30,12 @@ Useful links:
 
 ```
 aws-realtime-fraud-detection/
-├── app/chalice/                  # Serverless API (Chalice)
+├── app/                 
+│   ├── chalice/                  # Serverless API (Chalice)
+│   └── streamlit/                # Dashboard (Streamlit)
 ├── assets/                       # Images, diagrams
 ├── devops/infra/                 # Infrastructure-as-Code (Terraform, etc.)
 ├── docs/                         # Documentation
-├── frontend/                     # Dashboard (Streamlit)
 ├── scripts/                      # Data generation (client simulator)
 ├── src/fraudit/                  # Streaming pipeline & utilities
 │   ├── jobs/elt/                 # Schema, transformations, loading
