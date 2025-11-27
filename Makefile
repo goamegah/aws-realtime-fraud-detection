@@ -104,6 +104,10 @@ env: ## Create .env from .env.example if missing
 	  else echo "No $(ENV_EXAMPLE) found."; fi; \
 	else echo "$(ENV_FILE) already exists"; fi
 
+.PHONY: env.sync
+env.sync: ## Sync .env with Terraform outputs (run after tf.apply)
+	@./devops/scripts/sync_env.sh
+
 # -----------------------------------------------------------------------------
 # Code quality & tests
 # -----------------------------------------------------------------------------
@@ -212,9 +216,11 @@ chalice.delete: ## Delete Chalice app from AWS (stage=$(CHALICE_STAGE))
 # Glue deployment (S3 uploads for Glue job artifacts)
 # -----------------------------------------------------------------------------
 .PHONY: deploy.glue
-deploy.glue: ## Build wheel and upload Glue artifacts (wheel, job script, kinesis connector) to S3
+deploy.glue: ## Build wheel and upload Glue artifacts (wheel, job script, Kinesis connector) to S3
 	@$(ACT) && set -a && [ -f $(ENV_FILE) ] && source $(ENV_FILE) || true; set +a; \
-	$(PY) -m devops.deploy.cli --bucket $$SPARK_SOLUTION_S3_BUCKET --region $$AWS_REGION --prefix $$SPARK_SOLUTION_NAME
+	PREFIX_ARG=""; \
+	if [ -n "$$SPARK_SOLUTION_NAME" ]; then PREFIX_ARG="--prefix $$SPARK_SOLUTION_NAME"; else PREFIX_ARG="--no-solution-prefix"; fi; \
+	$(PY) -m devops.deploy.cli --bucket $$SPARK_SOLUTION_S3_BUCKET --region $$AWS_REGION $$PREFIX_ARG
 
 # -----------------------------------------------------------------------------
 # Documentation helpers

@@ -126,7 +126,6 @@ def _upload_all(
         print("WARNING: Skipping wheel upload; wheel not found.")
 
 
-
 def main() -> None:
     args = _resolve_args()
 
@@ -139,8 +138,8 @@ def main() -> None:
     dist_dir = Path(args.dist_dir).resolve()
 
     # Always build then upload; optionally download JAR if not skipping
-    if not getattr(args, "skip_jar", False):
-        jar_path = _maybe_download_jar(jar_path, getattr(args, "jar_url", None))
+    if not args.skip_jar:
+        jar_path = _maybe_download_jar(jar_path, args.jar_url)
 
     run_build()
 
@@ -150,7 +149,7 @@ def main() -> None:
     else:
         wheel_path = find_latest_wheel(dist_dir)
     if not wheel_path:
-        if getattr(args, "fail_on_missing_wheel", False):
+        if args.fail_on_missing_wheel:
             print(f"ERROR: No wheel found in {dist_dir} and --fail-on-missing-wheel is set. Aborting.", file=sys.stderr)
             sys.exit(3)
         else:
@@ -168,10 +167,9 @@ def main() -> None:
         region=args.region,
         profile=args.profile,
         include_solution_prefix=include_solution_prefix,
-        skip_jar=getattr(args, "skip_jar", False),
+        skip_jar=args.skip_jar,
     )
     print("Deploy completed (build + upload).")
-    return
 
 
 if __name__ == "__main__":

@@ -36,11 +36,6 @@ class DeployConfig:
     # Behavior
     include_solution_prefix: bool = True
 
-    def prefix_key(self, key: str) -> str:
-        if self.include_solution_prefix and self.solution_prefix:
-            return f"{self.solution_prefix.rstrip('/')}/{key.lstrip('/')}"
-        return key
-
 
 def default_config() -> DeployConfig:
     return DeployConfig(
