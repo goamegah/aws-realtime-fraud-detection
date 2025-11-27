@@ -49,18 +49,56 @@ aws-realtime-fraud-detection/
 - Python 3.10
 - [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) and configure it with your [AWS credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html).
 - [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
-- Docker (optional)
+
+## Quick start
+
+- Setup your virtual env and install required packages
+```shell
+$ make install.all
+```
+
+- Provision AWS resources
+```shell
+$ make tf.init
+$ make tf.plan
+$ make tf.apply
+```
+Setup Chalice configuration file `app/chalice/.chalice/config.json` using lambda execution role given by terraform output.
+After that you can provision Lambda and API GateAway and deploy your API app on Lambda.
+
+```shell
+$ make chalice.deploy
+```
+
+- Deploy Spark/Glue
+
+Build wheel and upload Glue artifacts (wheel, job script, kinesis jar) to S3
+```shell
+$ make deploy.glue
+```
 
 ## Developer setup
-### AWS Resource Provisioning
-- A Terraform stack is provided in `devops/infra/main` to create AWS building blocks (Kinesis, IAM Lambda/Glue, S3, RDS, optional Secrets).
+### AWS Resource Provisioning & Deployment
+- A Terraform stack is provided in `devops/infra/main` to create AWS building blocks (Kinesis, IAM Lambda/Glue, S3, RDS, optional Secrets, optional SageMaker Notebook).
 - Detailed usage guide: [terraform guide](docs/terraform.md)
 ```shell
 $ cd devops/infra/main
 $ terraform init
-$ terraform plan 
 $ terraform apply
 ```
+
+Python deployment wrapper (non-infra artifacts):
+Single command: always builds then uploads Glue artifacts.
+
+```shell
+# Deploy (always build then upload Glue artifacts):
+$ python -m devops.deploy.cli --bucket <streaming-bucket> --region <aws-region>
+# Useful flags: --skip-jar to skip JAR upload, --fail-on-missing-wheel to make CI fail if no wheel is found.
+```
+
+GitHub Actions CI/CD:
+- A reusable workflow is provided at .github/workflows/deploy.yml (workflow_dispatch). It performs Terraform apply with selected targets then runs the Python wrapper for artifacts.
+- Configure secrets.AWS_ROLE_TO_ASSUME to allow OIDC access.
 
 - Map outputs to your `.env`:
   - stream_name / KINESIS_STREAM = output.kinesis_stream_name

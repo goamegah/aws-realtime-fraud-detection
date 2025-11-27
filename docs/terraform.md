@@ -31,8 +31,8 @@ Important (security and name collisions):
 cd devops/infra/main
 # Optional: adjust dev.tfvars
 terraform init
-terraform plan -var-file=dev.tfvars
-terraform apply -var-file=dev.tfvars
+# Deploy full stack (Glue and SageMaker):
+terraform apply
 ```
 
 ## Main variables (variables.tf):
@@ -40,6 +40,13 @@ terraform apply -var-file=dev.tfvars
 - kinesis_stream_name: Kinesis stream name (default fraud-predictions-stream)
 - kinesis_shard_count: number of shards (default 4)
 - postgres_user, postgres_password, postgres_db, postgres_port: RDS parameters
+- SageMaker options:
+  - sagemaker_notebook_name (default fraudit-notebook)
+  - sagemaker_notebook_instance_type (default ml.t3.medium)
+  - sagemaker_root_volume_size (default 20)
+  - sagemaker_subnet_id (optional)
+  - sagemaker_security_group_ids (optional)
+  - sagemaker_lifecycle_startup_content (optional bash script)
 
 Example dev.tfvars:
 ```hcl
@@ -87,6 +94,15 @@ Indicative steps:
 
 Once the artifacts are uploaded, you can start the Glue job from the console, ensuring the default arguments defined in glue.tf are set.
 
+## Python deployment wrapper (artifacts)
+Use the Python CLI to upload non-infra artifacts after Terraform:
+
+```bash
+python -m devops.deploy.cli \
+  --bucket $(terraform output -raw spark_streaming_bucket_name) \
+  --region <aws-region>  # uploads Glue artifacts (build + upload); notebooks are not synced to S3
+```
+
 ## Cleanup
 ```bash
 terraform destroy -var-file=dev.tfvars
@@ -95,3 +111,4 @@ terraform destroy -var-file=dev.tfvars
 ## Notes
 - The Secrets Manager module (secrets.tf) is commented out by default. Uncomment and apply if you want to manage Postgres credentials via AWS Secrets Manager, then reference the ARN/name in your application configuration.
 - IAM: policies are simplified for the demo; restrict resources (specific ARNs) in production.
+

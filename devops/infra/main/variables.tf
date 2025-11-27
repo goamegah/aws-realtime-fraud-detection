@@ -73,3 +73,47 @@ variable "kinesis_shard_count" {
     type        = number
     default     = 4
 }
+
+
+# SageMaker variables
+variable "sagemaker_notebook_name" {
+    description = "Name of the SageMaker Notebook Instance"
+    type        = string
+    default     = "fraudit-notebook"
+}
+
+variable "sagemaker_notebook_instance_type" {
+    description = "Instance type for the Notebook"
+    type        = string
+    default     = "ml.t3.medium"
+}
+
+variable "sagemaker_root_volume_size" {
+    description = "Root volume size in GB"
+    type        = number
+    default     = 20
+}
+
+variable "sagemaker_subnet_id" {
+    description = "Subnet ID to place the notebook in (optional). Leave empty for no VPC attachment."
+    type        = string
+    default     = ""
+}
+
+variable "sagemaker_security_group_ids" {
+    description = "Security group IDs for the notebook (optional)"
+    type        = list(string)
+    default     = []
+}
+
+variable "sagemaker_lifecycle_startup_content" {
+    description = "Lifecycle configuration script content (optional)"
+    type        = string
+    default     = "" # Leave empty for no lifecycle configuration
+}
+
+variable "region" {
+    description = "AWS region"
+    type        = string
+    default     = "eu-west-1"
+}

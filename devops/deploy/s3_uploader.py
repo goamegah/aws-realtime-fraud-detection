@@ -23,3 +23,21 @@ def upload_file(
     content_type, _ = mimetypes.guess_type(str(file_path))
     extra = {"ContentType": content_type} if content_type else None
     s3.upload_file(str(file_path), bucket, key, ExtraArgs=extra or {})
+
+
+def upload_dir(
+    *,
+    session: boto3.session.Session,
+    bucket: str,
+    prefix: str,
+    src_dir: Path,
+) -> None:
+    s3 = session.client("s3", config=BotoConfig(retries={"max_attempts": 10, "mode": "standard"}))
+    src_dir = src_dir.resolve()
+    for p in src_dir.rglob("*"):
+        if p.is_file():
+            rel = p.relative_to(src_dir).as_posix()
+            key = f"{prefix.rstrip('/')}/{rel}"
+            content_type, _ = mimetypes.guess_type(str(p))
+            extra = {"ContentType": content_type} if content_type else None
+            s3.upload_file(str(p), bucket, key, ExtraArgs=extra or {})

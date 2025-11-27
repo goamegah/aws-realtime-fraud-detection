@@ -3,7 +3,7 @@ resource "aws_glue_job" "fraudit_streaming_job" {
     role_arn = aws_iam_role.glue-role.arn
     # Job entrypoint
     command {
-        script_location = "s3://${aws_s3_bucket.spark_streaming_bucket.bucket}/spark-jobs/glue_job.py"
+        script_location = "s3://${aws_s3_bucket.fraud_streaming_bucket.bucket}/spark-jobs/glue_job.py"
         python_version  = "3"
     }
 
@@ -13,10 +13,10 @@ resource "aws_glue_job" "fraudit_streaming_job" {
     default_arguments = {
         "--job-language"                     = "python"
         # Reference to spark jobs packaged(wheel) located in s3
-        "--additional-python-modules"        = "s3://${aws_s3_bucket.spark_streaming_bucket.bucket}/wheel/fraudit-0.0.1-py3-none-any.whl"
+        "--additional-python-modules"        = "s3://${aws_s3_bucket.fraud_streaming_bucket.bucket}/wheel/fraudit-0.0.1-py3-none-any.whl"
         "--python-modules-installer-option"  = "--upgrade"
         # reference to spark kinesis connector located in S3
-        "--extra-jars"                       = "s3://${aws_s3_bucket.spark_streaming_bucket.bucket}/jars/spark-streaming-sql-kinesis-connector_2.12-1.0.0.jar"
+        "--extra-jars"                       = "s3://${aws_s3_bucket.fraud_streaming_bucket.bucket}/jars/spark-streaming-sql-kinesis-connector_2.12-1.0.0.jar"
 
         # PostgreSQL variables
         "--postgres_host"                    = aws_db_instance.fraudit_postgres.address
@@ -31,7 +31,7 @@ resource "aws_glue_job" "fraudit_streaming_job" {
         "--aws_region"                       = var.aws_region
 
         # Checkpoint S3 - use this bucket for spark structured streaming checkpointing
-        "--s3_checkpoint_bucket"             = aws_s3_bucket.spark_streaming_bucket.bucket
+        "--s3_checkpoint_bucket"             = "s3://${aws_s3_bucket.fraud_streaming_bucket.bucket}/checkpoints/"
 
         # Monitoring
         "--enable-continuous-cloudwatch-log" = "true"

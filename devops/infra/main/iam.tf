@@ -69,8 +69,8 @@ data "aws_iam_policy_document" "glue_role_policy_document" {
         resources = [
             "${aws_s3_bucket.fraud_data_bucket.arn}",
             "${aws_s3_bucket.fraud_data_bucket.arn}/*",
-            "${aws_s3_bucket.spark_streaming_bucket.arn}",
-            "${aws_s3_bucket.spark_streaming_bucket.arn}/*"
+            "${aws_s3_bucket.fraud_streaming_bucket.arn}",
+            "${aws_s3_bucket.fraud_streaming_bucket.arn}/*"
         ]
         effect = "Allow"
     }

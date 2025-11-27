@@ -1,6 +1,6 @@
 # === S3 Bucket for Fraud Data Storage ===
 resource "aws_s3_bucket" "fraud_data_bucket" {
-    bucket        = "credit-card-fraud-detection-data-bucket"
+    bucket        = "fraud-detection-data-bucket-${var.aws_region}"
     force_destroy = true
 
     tags = {
@@ -27,8 +27,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "data_bucket_lifecycle" {
 }
 
 
-resource "aws_s3_bucket" "spark_streaming_bucket" {
-    bucket        = "credit-card-fraud-detection-spark-streaming-bucket"
+resource "aws_s3_bucket" "fraud_streaming_bucket" {
+    bucket        = "fraud-detection-stream-bucket-${var.aws_region}"
     force_destroy = true
 
     tags = {

@@ -158,7 +158,8 @@ def main():
     logger.info(f"AWS_REGION: {config.AWS_REGION}")
     logger.info(f"KINESIS_ENDPOINT: {config.KINESIS_ENDPOINT}")
     logger.info(f"PostgreSQL JDBC URL: jdbc:postgresql://{creds['host']}:{creds['port']}/{creds['dbname']}")
-    logger.info(f"PostgreSQL Properties: {{'user': '{props['user']}', 'password': '{props["password"]}', 'driver': '{props['driver']}'}}")
+    # Do not log raw password; mask it in logs
+    logger.info("PostgreSQL Properties: {'user': '%s', 'password': '****', 'driver': '%s'}", props['user'], props['driver'])
     logger.info(f"Checkpoint Path: {checkpoint_path}")
     logger.info("Starting streaming job...")
 
@@ -192,17 +193,35 @@ def main():
     # JSON parsing with structured schema
     logger.info("Parsing JSON data from Kinesis stream...")
 
-    json_df = (
+    # Parse and flatten JSON data to match expected transformation schema
+    parsed_df = (
         raw_df
         .selectExpr("CAST(data AS STRING) AS json_string")
         .select(from_json(col("json_string"), get_stream_schema()).alias("record"))
-        .select("record.*")
+        .select(
+            col("record.timestamp").alias("timestamp"),
+            col("record.user_id").alias("user_id"),
+            col("record.source").alias("source"),
+            col("record.fraud_prediction").alias("fraud_prediction"),
+            col("record.fraud_proba").alias("fraud_proba"),
+            col("record.anomaly_score").alias("anomaly_score"),
+            col("record.ip_address").alias("ip_address"),
+            # Flatten nested structs
+            col("record.device_info.device_type").alias("device_type"),
+            col("record.device_info.os_version").alias("os_version"),
+            col("record.device_info.app_version").alias("app_version"),
+            col("record.geo.country").alias("country"),
+            col("record.geo.region").alias("region"),
+            col("record.geo.city").alias("city"),
+            col("record.geo.latitude").alias("latitude"),
+            col("record.geo.longitude").alias("longitude")
+        )
     )
 
     # Business transformation
     logger.info("Transforming data...")
 
-    transformed_df = transform_df(json_df)
+    transformed_df = transform_df(parsed_df)
 
     # Writing to PostgreSQL in streaming mode
     logger.info("Writing transformed data to PostgreSQL...")

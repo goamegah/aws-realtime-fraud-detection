@@ -23,14 +23,18 @@ output "rds_postgres_port" {
 
 output "spark_streaming_bucket_name" {
     description = "Bucket used to store wheel, jars, and glue job script"
-    value = aws_s3_bucket.spark_streaming_bucket.bucket
+    value = aws_s3_bucket.fraud_streaming_bucket.bucket
 }
 
-output "fraud_data_bucket" {
+output "fraud_data_bucket_name" {
     value = aws_s3_bucket.fraud_data_bucket.bucket
     description = "Bucket used to store credit card fraud dataset"
 }
 
+output "sagemaker_notebook_name" {
+    value       = aws_sagemaker_notebook_instance.fraudit_notebook.name
+    description = "Name of the SageMaker Notebook Instance"
+}
 ##  =============================
 # output "s3_bucket_name" {
 #   description = "Name of the S3 bucket for prediction results" 

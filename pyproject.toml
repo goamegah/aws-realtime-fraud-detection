@@ -9,7 +9,16 @@ dependencies = [
     # Core dependencies
     "pyspark>=3.5.5",
     "awsglue-dev>=2021.12.30",
-    "psycopg2-binary>=2.9.6"
+    "psycopg2-binary>=2.9.6",
+    "boto3",
+    "chalice",
+    "requests",
+    "pandas",
+    "numpy",
+    "scipy",
+    "scikit-learn",
+    "python-dotenv",
+    "git-filter-repo>=2.47.0"
 ]
 
 [project.optional-dependencies]
@@ -20,7 +29,9 @@ dev = [
     "pytest-mock",
     "pytest-cov",
     "wheel",
-    "mock"
+    "mock",
+    "boto3",
+    "botocore"
 ]
 
 # AWS Chalice dependencies

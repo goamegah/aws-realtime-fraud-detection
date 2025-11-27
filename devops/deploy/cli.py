@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 """
-Deployment utility for AWS Glue artifacts.
+Deployment utility for non-infra artifacts (Glue artifacts). SageMaker notebooks are not uploaded to S3.
 
 Features:
-- Build wheel
+- Build Python wheel
 - Upload wheel, Glue job script, and Kinesis connector JAR to S3
 
-Usage examples:
-- python -m devops.deploy.cli build
-- python -m devops.deploy.cli upload --bucket my-bucket --region eu-west-1
-- python -m devops.deploy.cli deploy --bucket my-bucket --prefix fraudit
+Usage:
+- python -m devops.deploy.cli --bucket my-bucket --region eu-west-1 [--prefix fraudit]
 
-Reads defaults from .env: SPARK_SOLUTIONS_S3_BUCKET, SPARK_SOLUTION_NAME, AWS_REGION
+Assumes Python 3.10 runtime. Reads defaults from .env: SPARK_SOLUTION_S3_BUCKET, SPARK_SOLUTION_NAME, AWS_REGION
 """
 from __future__ import annotations
 
@@ -36,47 +34,36 @@ def download_file(url: str, dest: Path) -> Path:
 def _resolve_args() -> argparse.Namespace:
     cfg = default_config()
 
-    p = argparse.ArgumentParser(description="Deploy Glue artifacts (wheel, job script, kinesis jar) to S3")
+    p = argparse.ArgumentParser(description="CLI for Glue artifacts. Single command:\n- deploy = build + upload (always)")
 
-    sub = p.add_subparsers(dest="cmd", required=True)
+    # Single-command interface: no subparsers
 
-    common = argparse.ArgumentParser(add_help=False)
-    common.add_argument("--bucket", default=cfg.bucket, help="Target S3 bucket (env SPARK_SOLUTION_S3_BUCKET)")
-    common.add_argument("--region", default=cfg.region, help="AWS region (env AWS_REGION)")
-    common.add_argument("--profile", default=None, help="AWS profile to use (optional)")
-    common.add_argument("--prefix", default=cfg.solution_prefix, help="Solution prefix for keys (env SPARK_SOLUTION_NAME)")
-    common.add_argument("--no-solution-prefix", action="store_true", help="Do not prepend solution prefix to keys")
-
-    # Paths and prefixes
-    common.add_argument("--job-path", default=str(cfg.job_path), help="Local path to Glue job script")
-    common.add_argument("--jar-path", default=str(cfg.jar_path), help="Local path to Kinesis connector JAR")
-    common.add_argument("--dist-dir", default=str(cfg.dist_dir), help="Local dist directory for wheels")
-    common.add_argument("--jobs-prefix", default=cfg.jobs_prefix, help="S3 key prefix for jobs")
-    common.add_argument("--jars-prefix", default=cfg.jars_prefix, help="S3 key prefix for jars")
-    common.add_argument("--wheels-prefix", default=cfg.wheels_prefix, help="S3 key prefix for wheels")
-
-    # Optional download for jar
-    common.add_argument("--jar-url", default=None, help="If provided and Kinesis connector jar-path does not exist, download from URL")
-
-    # build subcommand
-    sp_build = sub.add_parser("build", parents=[common], help="Build the wheel with python -m build")
-    sp_build.add_argument("--python", default="python3", help="Python executable to use for building")
-
-    # upload subcommand
-    sp_upload = sub.add_parser("upload", parents=[common], help="Upload artifacts to S3")
-    sp_upload.add_argument("--wheel", default=None, help="Explicit wheel file to upload (defaults to latest in dist)")
-
-    # deploy subcommand (build + upload)
-    sp_deploy = sub.add_parser("deploy", parents=[common], help="Build wheel then upload all artifacts")
-    sp_deploy.add_argument("--python", default="python3", help="Python executable to use for building")
-    sp_deploy.add_argument("--wheel", default=None, help="Explicit wheel file to upload (defaults to latest in dist)")
+    # Single deploy options
+    p.add_argument("--bucket", default=cfg.bucket, help="Target S3 bucket (env SPARK_SOLUTION_S3_BUCKET)")
+    p.add_argument("--region", default=cfg.region, help="AWS region (env AWS_REGION)")
+    p.add_argument("--profile", default=None, help="AWS profile to use (optional)")
+    p.add_argument("--prefix", default=cfg.solution_prefix, help="Solution prefix for keys (env SPARK_SOLUTION_NAME)")
+    p.add_argument("--no-solution-prefix", action="store_true", help="Do not prepend solution prefix to keys")
+    p.add_argument("--job-path", default=str(cfg.job_path), help="Local path to Glue job script")
+    p.add_argument("--jar-path", default=str(cfg.jar_path), help="Local path to Kinesis connector JAR")
+    p.add_argument("--dist-dir", default=str(cfg.dist_dir), help="Local dist directory for wheels")
+    p.add_argument("--jobs-prefix", default=cfg.jobs_prefix, help="S3 key prefix for jobs")
+    p.add_argument("--jars-prefix", default=cfg.jars_prefix, help="S3 key prefix for jars")
+    p.add_argument("--wheels-prefix", default=cfg.wheels_prefix, help="S3 key prefix for wheels")
+    p.add_argument("--jar-url", default=None, help="If provided and Kinesis connector jar-path does not exist, download from URL")
+    p.add_argument("--wheel", default=None, help="Explicit wheel file to upload (defaults to latest in dist)")
+    p.add_argument("--fail-on-missing-wheel", action="store_true", help="Exit with error if no wheel is available to upload")
+    p.add_argument("--skip-jar", action="store_true", help="Skip JAR download and upload")
 
     return p.parse_args()
 
 
 def _validate_bucket(arg: Optional[str]) -> str:
     if not arg:
-        print("ERROR: S3 bucket not provided. Use --bucket or set SOLUTIONS_S3_BUCKET in .env", file=sys.stderr)
+        print(
+            "ERROR: S3 bucket not provided. Use --bucket or set SPARK_SOLUTION_S3_BUCKET in .env (see Makefile target deploy.glue)",
+            file=sys.stderr,
+        )
         sys.exit(2)
     return arg
 
@@ -104,6 +91,7 @@ def _upload_all(
     region: Optional[str],
     profile: Optional[str],
     include_solution_prefix: bool,
+    skip_jar: bool,
 ) -> None:
     session = get_boto3_session(region=region, profile=profile)
 
@@ -115,14 +103,17 @@ def _upload_all(
     upload_file(session=session, bucket=bucket, key=job_key, file_path=job_path)
 
     # Kinesis connector JAR
-    if jar_path.exists():
-        jar_key = jars_prefix.rstrip("/") + "/" + jar_path.name
-        if include_solution_prefix and prefix:
-            jar_key = f"{prefix}/{jar_key}"
-        print(f"Uploading JAR: {jar_path} -> s3://{bucket}/{jar_key}")
-        upload_file(session=session, bucket=bucket, key=jar_key, file_path=jar_path)
+    if not skip_jar:
+        if jar_path.exists():
+            jar_key = jars_prefix.rstrip("/") + "/" + jar_path.name
+            if include_solution_prefix and prefix:
+                jar_key = f"{prefix}/{jar_key}"
+            print(f"Uploading JAR: {jar_path} -> s3://{bucket}/{jar_key}")
+            upload_file(session=session, bucket=bucket, key=jar_key, file_path=jar_path)
+        else:
+            print(f"WARNING: Skipping JAR upload; file not found: {jar_path}")
     else:
-        print(f"WARNING: Skipping JAR upload; file not found: {jar_path}")
+        print("Skipping JAR upload (--skip-jar)")
 
     # Wheel
     if wheel_path and wheel_path.exists():
@@ -142,45 +133,45 @@ def main() -> None:
     bucket = _validate_bucket(args.bucket)
     include_solution_prefix = not args.no_solution_prefix
 
-    # Resolve paths
+    # Resolve common paths
     job_path = Path(args.job_path).resolve()
     jar_path = Path(args.jar_path).resolve()
     dist_dir = Path(args.dist_dir).resolve()
 
-    # Optionally download jar
-    jar_path = _maybe_download_jar(jar_path, args.jar_url)
+    # Always build then upload; optionally download JAR if not skipping
+    if not getattr(args, "skip_jar", False):
+        jar_path = _maybe_download_jar(jar_path, getattr(args, "jar_url", None))
 
-    if args.cmd == "build":
-        run_build(python_exe=args.python)
-        print("Build completed.")
-        return
+    run_build()
 
-    if args.cmd in ("upload", "deploy"):
-        wheel_path: Optional[Path] = None
-        if args.cmd == "deploy":
-            run_build(python_exe=args.python)
-        if args.wheel:
-            wheel_path = Path(args.wheel).resolve()
+    wheel_path: Optional[Path] = None
+    if args.wheel:
+        wheel_path = Path(args.wheel).resolve()
+    else:
+        wheel_path = find_latest_wheel(dist_dir)
+    if not wheel_path:
+        if getattr(args, "fail_on_missing_wheel", False):
+            print(f"ERROR: No wheel found in {dist_dir} and --fail-on-missing-wheel is set. Aborting.", file=sys.stderr)
+            sys.exit(3)
         else:
-            wheel_path = find_latest_wheel(dist_dir)
-        if not wheel_path:
             print(f"WARNING: No wheel found in {dist_dir}. You may pass --wheel explicitly.")
 
-        _upload_all(
-            bucket=bucket,
-            prefix=args.prefix,
-            jobs_prefix=args.jobs_prefix,
-            jars_prefix=args.jars_prefix,
-            wheels_prefix=args.wheels_prefix,
-            job_path=job_path,
-            jar_path=jar_path,
-            wheel_path=wheel_path,
-            region=args.region,
-            profile=args.profile,
-            include_solution_prefix=include_solution_prefix,
-        )
-        print("Upload completed.")
-        return
+    _upload_all(
+        bucket=bucket,
+        prefix=args.prefix,
+        jobs_prefix=args.jobs_prefix,
+        jars_prefix=args.jars_prefix,
+        wheels_prefix=args.wheels_prefix,
+        job_path=job_path,
+        jar_path=jar_path,
+        wheel_path=wheel_path,
+        region=args.region,
+        profile=args.profile,
+        include_solution_prefix=include_solution_prefix,
+        skip_jar=getattr(args, "skip_jar", False),
+    )
+    print("Deploy completed (build + upload).")
+    return
 
 
 if __name__ == "__main__":

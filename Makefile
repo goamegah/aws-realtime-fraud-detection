@@ -26,7 +26,7 @@ SRC_DIR := src
 APP_DIR := app
 SCRIPTS_DIR := scripts
 DOCS_DIR := docs
-TF_DIR ?= devops/infra/main
+TF_DIR ?= $(ROOT_DIR)/devops/infra/main
 COMPOSE_FILE ?= docker-compose.yml
 ENV_FILE ?= .env
 ENV_EXAMPLE ?= .env.example
@@ -212,9 +212,9 @@ chalice.delete: ## Delete Chalice app from AWS (stage=$(CHALICE_STAGE))
 # Glue deployment (S3 uploads for Glue job artifacts)
 # -----------------------------------------------------------------------------
 .PHONY: deploy.glue
-deploy.glue: ## Build wheel and upload Glue artifacts (wheel, job script, kinesis jar) to S3
+deploy.glue: ## Build wheel and upload Glue artifacts (wheel, job script, kinesis connector) to S3
 	@$(ACT) && set -a && [ -f $(ENV_FILE) ] && source $(ENV_FILE) || true; set +a; \
-	$(PY) -m devops.deploy.cli deploy --bucket $$SPARK_SOLUTION_S3_BUCKET --region $$AWS_REGION --prefix $$SPARK_SOLUTION_NAME
+	$(PY) -m devops.deploy.cli --bucket $$SPARK_SOLUTION_S3_BUCKET --region $$AWS_REGION --prefix $$SPARK_SOLUTION_NAME
 
 # -----------------------------------------------------------------------------
 # Documentation helpers

@@ -1,6 +1,6 @@
 # fraudit/jobs/elt/transform.py
 
-from pyspark.sql.functions import col, when, regexp_replace, upper, trim
+from pyspark.sql.functions import col, when, regexp_replace, upper, trim, current_timestamp
 from pyspark.sql.types import TimestampType
 
 def transform_df(df):
@@ -16,6 +16,10 @@ def transform_df(df):
     
     # Convert timestamp string to proper timestamp type
     df = df.withColumn("timestamp", col("timestamp").cast(TimestampType()))
+
+    # Ensure processed_at exists (parity with Glue job); if missing, set current timestamp
+    if "processed_at" not in df.columns:
+        df = df.withColumn("processed_at", current_timestamp())
     
     # Data quality transformations
     transformed_df = df.select(
