@@ -54,7 +54,12 @@ aws-realtime-fraud-detection/
 
 - Setup your virtual env and install required packages
 ```shell
-$ make install.all
+$ uv sync
+```
+
+- Setup your AWS credentials
+```shell
+$ aws configure
 ```
 
 - Provision AWS resources
@@ -70,56 +75,11 @@ After that you can provision Lambda and API GateAway and deploy your API app on 
 $ make chalice.deploy
 ```
 
-- Deploy Spark/Glue
+- Deployment
+Build and deploy ```fraudit``` package wheel and Glue job artifacts to S3 for AWS Glue job consumption.
 
-Build wheel and upload Glue artifacts (wheel, job script, kinesis jar) to S3
 ```shell
 $ make deploy.glue
-```
-
-## Developer setup
-### AWS Resource Provisioning & Deployment
-- A Terraform stack is provided in `devops/infra/main` to create AWS building blocks (Kinesis, IAM Lambda/Glue, S3, RDS, optional Secrets, optional SageMaker Notebook).
-- Detailed usage guide: [terraform guide](docs/terraform.md)
-```shell
-$ cd devops/infra/main
-$ terraform init
-$ terraform apply
-```
-
-Python deployment wrapper (non-infra artifacts):
-Single command: always builds then uploads Glue artifacts.
-
-```shell
-# Deploy (always build then upload Glue artifacts):
-$ python -m devops.deploy.cli --bucket <streaming-bucket> --region <aws-region>
-# Useful flags: --skip-jar to skip JAR upload, --fail-on-missing-wheel to make CI fail if no wheel is found.
-```
-
-GitHub Actions CI/CD:
-- A reusable workflow is provided at .github/workflows/deploy.yml (workflow_dispatch). It performs Terraform apply with selected targets then runs the Python wrapper for artifacts.
-- Configure secrets.AWS_ROLE_TO_ASSUME to allow OIDC access.
-
-- Map outputs to your `.env`:
-  - stream_name / KINESIS_STREAM = output.kinesis_stream_name
-  - POSTGRES_HOST = output.rds_postgres_endpoint
-  - POSTGRES_PORT = output.rds_postgres_port
-  - aws_region = var.aws_region
-  
-### Set up virtual environment
-Install the package in development mode with the necessary extras.
-
-- All-in-one (recommended for a complete local setup):
-```bash
-$ python -m pip install -e .[all]
-```
-- Chalice API only:
-```bash
-$ python -m pip install -e .[chalice]
-```
-- Data generation scripts only:
-```bash
-$ python -m pip install -e .[scripts]
 ```
 
 ### AWS SageMaker
@@ -162,7 +122,7 @@ $ cd app/chalice
 $ chalice deploy
 ```
 
-#### Minimal example
+#### Minimal transaction example
 - JSON input (minimal example):
 ```json
 {
@@ -177,7 +137,7 @@ $ chalice deploy
   "data": "0.12, 50.3, 1, 0, 3, ..."
 }
 ```
-- Output (excerpt):
+- API Output (excerpt):
 ```json
 {
   "anomaly_detector": {"score": 0.02},
