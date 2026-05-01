@@ -31,7 +31,7 @@ resource "aws_glue_job" "fraudit_streaming_job" {
         "--aws_region"                       = var.aws_region
 
         # Checkpoint S3 - use this bucket for spark structured streaming checkpointing
-        "--s3_checkpoint_bucket"             = "s3://${aws_s3_bucket.fraud_streaming_bucket.bucket}/checkpoints/"
+        "--s3_checkpoint_bucket"             = aws_s3_bucket.fraud_streaming_bucket.bucket
 
         # Monitoring
         "--enable-continuous-cloudwatch-log" = "true"
