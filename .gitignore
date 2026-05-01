@@ -238,3 +238,5 @@ checkpoints/
 *.iml
 aws/
 config.json
+# Local dataset (too large for GitHub)
+dataset/creditcard.csv
