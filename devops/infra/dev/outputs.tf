@@ -26,6 +26,10 @@ output "spark_streaming_bucket_name" {
     value = aws_s3_bucket.fraud_streaming_bucket.bucket
 }
 
+output "fraud_ml_bucket_name" {
+  value = aws_s3_bucket.fraud_ml_bucket.bucket
+}
+
 output "fraud_data_bucket_name" {
     value = aws_s3_bucket.fraud_data_bucket.bucket
     description = "Bucket used to store credit card fraud dataset"

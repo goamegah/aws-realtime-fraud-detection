@@ -1,6 +1,6 @@
 # === S3 Bucket for Fraud Data Storage ===
 resource "aws_s3_bucket" "fraud_data_bucket" {
-    bucket        = "fraud-detection-data-bucket-${var.aws_region}"
+    bucket        = "fraud-detection-data-bkt-${var.aws_region}"
     force_destroy = true
 
     tags = {
@@ -28,12 +28,41 @@ resource "aws_s3_bucket_lifecycle_configuration" "data_bucket_lifecycle" {
 
 
 resource "aws_s3_bucket" "fraud_streaming_bucket" {
-    bucket        = "fraud-detection-stream-bucket-${var.aws_region}"
+    bucket        = "fraud-detection-stream-bkt-${var.aws_region}"
     force_destroy = true
 
     tags = {
         Environment = "dev"
         Project     = "fraud-detection"
+    }
+}
+
+
+
+resource "aws_s3_bucket" "fraud_ml_bucket" {
+    bucket        = "fraud-detection-ml-bkt-${var.aws_region}"
+    force_destroy = true
+
+    tags = {
+        Environment = "dev"
+        Project     = "fraud-detection"
+    }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "ml_bucket_lifecycle" {
+    bucket = aws_s3_bucket.fraud_ml_bucket.id
+
+    rule {
+        id     = "expire-old-data"
+        status = "Enabled"
+
+        filter {
+            prefix = ""
+        }
+
+        expiration {
+            days = 90
+        }
     }
 }
 

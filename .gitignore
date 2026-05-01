@@ -237,3 +237,4 @@ checkpoints/
 *.xml
 *.iml
 aws/
+config.json
