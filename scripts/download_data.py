@@ -1,54 +1,58 @@
+"""Download the credit-card fraud dataset locally from Kaggle.
+
+Source: https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
+
+Requirements:
+    - `kaggle` Python package (pip install kaggle)
+    - Kaggle credentials available either via:
+        * ~/.kaggle/kaggle.json, or
+        * KAGGLE_USERNAME / KAGGLE_KEY env vars (loaded from .env)
+"""
+
 import os
 import zipfile
-import boto3
-from dotenv import load_dotenv
-from fraudit.definition import DATASET_LOCAL_DIR
+from pathlib import Path
 
-# Load environment variables from .env file
+from dotenv import load_dotenv
+
+# Load environment variables from .env file (may include KAGGLE_USERNAME / KAGGLE_KEY)
 load_dotenv()
 
-CONTINUE_SIMULATION = False
+KAGGLE_DATASET = "mlg-ulb/creditcardfraud"
+DATASET_LOCAL_DIR = Path(__file__).resolve().parent.parent / "dataset"
 
-if __name__ == "__main__":
-    # Example usage of DATASET_DIR
-    print(f"Dataset directory is set to: {DATASET_LOCAL_DIR}")
 
-    # Configure environment variables
-    aws_region = os.environ.get('AWS_REGION')
-    aws_access_key = os.getenv("AWS_ID_ACCESS_KEY")
-    aws_secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-    s3_bucket = os.getenv("SOLUTIONS_S3_BUCKET")
-    s3_prefix = os.getenv("SOLUTION_NAME")
+def main() -> None:
+    DATASET_LOCAL_DIR.mkdir(parents=True, exist_ok=True)
+    target_csv = DATASET_LOCAL_DIR / "creditcard.csv"
 
-    print(f"aws_region: {aws_region}")
-    print(f"aws_access_key: {aws_access_key}")
-    print(f"aws_secret_key: {aws_secret_key}")
-    print(f"s3_bucket: {s3_bucket}")
-    print(f"s3_prefix: {s3_prefix}")
+    print(f"Dataset directory: {DATASET_LOCAL_DIR}")
+    if target_csv.exists():
+        print(f"Already present — skipping download: {target_csv}")
+        return
 
-    os.makedirs(DATASET_LOCAL_DIR, exist_ok=True)
+    # Import after load_dotenv so KAGGLE_USERNAME / KAGGLE_KEY are picked up
+    from kaggle.api.kaggle_api_extended import KaggleApi
 
-    # Initialize S3 client
-    s3_client = boto3.client(
-        's3',
-        aws_access_key_id=aws_access_key,
-        aws_secret_access_key=aws_secret_key,
-        region_name=aws_region
+    api = KaggleApi()
+    api.authenticate()
+
+    print(f"Downloading {KAGGLE_DATASET} from Kaggle...")
+    api.dataset_download_files(
+        KAGGLE_DATASET,
+        path=str(DATASET_LOCAL_DIR),
+        quiet=False,
+        unzip=False,
     )
 
-    # Download file from S3
-    s3_key = f"{s3_prefix}/dataset/creditcard.csv.zip"
-    local_zip_path = f"{DATASET_LOCAL_DIR}/creditcard.csv.zip"
+    for zip_path in DATASET_LOCAL_DIR.glob("*.zip"):
+        print(f"Extracting {zip_path.name}...")
+        with zipfile.ZipFile(zip_path, "r") as zf:
+            zf.extractall(DATASET_LOCAL_DIR)
+        os.remove(zip_path)
 
-    print("Downloading...")
-    s3_client.download_file(s3_bucket, s3_key, local_zip_path)
-    print(f"Download complete: {local_zip_path}")
+    print(f"Done — dataset available at {target_csv}")
 
-    # Unzip file to DATASET_PATH
-    print("Extracting...")
-    with zipfile.ZipFile(local_zip_path, 'r') as zip_ref:
-        zip_ref.extractall(DATASET_LOCAL_DIR)
-    print(f"Files extracted to directory '{DATASET_LOCAL_DIR}'.")
 
-    # (Optional) Remove zip file
-    os.remove(local_zip_path)
+if __name__ == "__main__":
+    main()
