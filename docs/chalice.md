@@ -70,26 +70,30 @@ Steps in the AWS Console:
 
 Tip: In production, scope down "Resource" to specific SageMaker endpoint ARNs instead of "*".
 
-### 3) Install Chalice and create a new project (if needed)
+### 3) Project layout
 
-```shell
-$ python -m pip install chalice 
-$ chalice --version 
-$ chalice new-project fraud-api 
-$ cd fraud-api
+The Chalice application lives in `app/api/`:
+
+```
+app/api/
+├── app.py
+├── requirements.txt
+└── .chalice/
+    └── config.json
 ```
 
-Run locally to validate the app boots:
+Run it locally to validate the app boots:
 
 ```shell
-$ chalice local --port 8000
+make chalice.local           # http://localhost:8000/
+# or
+cd app/api && chalice local --port 8000
 ```
-
-Visit http://localhost:8000 to test your routes.
 
 ### 4) Configure Chalice to use the IAM role and environment variables
-Edit `.chalice/config.json` to reference the IAM role and add any environment variables your app requires 
-(e.g., SageMaker solution_prefix, region, stream_name).
+Edit `app/api/.chalice/config.json` to reference the IAM role and add any environment variables your app requires (e.g., SageMaker `solution_prefix`, region, `stream_name`).
+
+The `iam_role_arn` is filled in automatically by `make env.sync` from the Terraform output `lambda_exec_role_arn`.
 
 ```json
 { 
@@ -98,11 +102,12 @@ Edit `.chalice/config.json` to reference the IAM role and add any environment va
   "stages": {
     "dev": {
       "api_gateway_stage": "api",
+      "manage_iam_role": false,
       "iam_role_arn": "arn:aws:iam::123456789012:role/sagemaker-lambda-role", 
       "environment_variables": { 
         "solution_prefix": "fraud-detection", 
         "aws_region": "eu-west-1", 
-        "stream_name": "your-kinesis-stream-name"
+        "stream_name": "fraud-predictions-stream"
       }
     }
   }
@@ -116,44 +121,30 @@ Notes:
 ### 5) Deploy to AWS
 
 ```shell
-$ chalice deploy
+make chalice.deploy
+# or
+cd app/api && chalice deploy --stage dev
 ```
 
-This command:
-- Packages your code
-- Creates/updates the Lambda function and API Gateway
-- Prints the deployed REST API URL
-
-If you use a specific AWS profile or region:
-
-```shell
-$ AWS_PROFILE=your-profile 
-$ AWS_DEFAULT_REGION=eu-west-1 
-$ chalice deploy
-```
+`make chalice.deploy` also writes the deployed REST API URL back into `.env` as `CHALICE_API_URL`.
 
 ### 6) Test the deployed API
-Example with curl (adjust the path to your route, e.g., /predict):
+Example with curl (adjust the path to your route, e.g., `/predict`):
 
 ```shell
-$ curl -X POST "[https://xxxxxx.execute-api.eu-west-1.amazonaws.com/api/predict](https://xxxxxx.execute-api.eu-west-1.amazonaws.com/api/predict)"
--H "Content-Type: application/json"
--d '{"data":"0.12, 50.3, 1, 0, 3, ..."}'
+curl -X POST "$CHALICE_API_URL/predict" \
+  -H "Content-Type: application/json" \
+  -d '{"data":"0.12, 50.3, 1, 0, 3, ..."}'
 ```
 
 ### 7) Update and redeploy
 - Modify your application code/routes.
-- Redeploy:
-
-```shell
-$ chalice deploy
-```
+- Redeploy: `make chalice.deploy`
 
 ### 8) Clean up
-To delete the deployed resources created by Chalice:
 
 ```shell
-$ chalice delete
+make chalice.delete
 ```
 
 ## Troubleshooting

@@ -13,7 +13,7 @@ This documentation describes the project's reference architecture, the end-to-en
 ## Main components
 
 - Inference API (Chalice → Lambda)
-  - File: `app/chalice/app.py`
+  - File: `app/api/app.py`
   - Route: `POST /predict`
   - Role: receives an event (CSV features in `data` + rich `metadata`), calls two SageMaker endpoints (anomaly detection and fraud classification), and pushes an enriched record into a Kinesis stream.
   - Environment variables (Lambda):
@@ -38,12 +38,12 @@ This documentation describes the project's reference architecture, the end-to-en
   - Role: simulates requests to the API from a dataset (e.g., `dataset/creditcard.csv`).
 
 - Dashboard (Streamlit)
-  - Code: `frontend/`
+  - Code: `app/streamlit/`
   - Role: visualization of predictions from PostgreSQL.
 
 - Infrastructure as Code (Terraform)
-  - Folder: `devops/infra/main`
-  - Role: provision Kinesis, IAM (Lambda/Glue), S3, RDS (PostgreSQL), Secrets (optional). See the guide: `devops/infra/main/README.md`.
+  - Folder: `devops/infra/dev/`
+  - Role: provision Kinesis, IAM (Lambda/Glue), S3, RDS (PostgreSQL), SageMaker, Secrets (optional). See [docs/terraform.md](terraform.md).
 
 ## End-to-end data flow
 
@@ -103,15 +103,12 @@ The transformed DataFrame selects and standardizes these columns (see `transform
 ## Deployments
 
 - Local (demo):
-  - Install the package: `python -m pip install -e .[all]`
-  - Run the Chalice API locally (optional): `chalice local --port 8000`
-  - Start the streaming job: `python -m fraudit.main`
-  - Generate data: `python scripts/generate_data.py`
+  - Install the package: `make setup`
+  - Run the Chalice API locally (optional): `make chalice.local`
+  - Start the streaming job: `make run`
+  - Generate data: `make data.generate`
 
-- Managed AWS:
-  - Chalice: `chalice deploy` (set `stream_name`, `solution_prefix`, `aws_region`)
-  - Glue Streaming: package the code (wheel) and attach it to the Glue job (`--extra-py-files`), configure parameters (PostgreSQL, Kinesis, region, S3 checkpoint)
-  - RDS/PostgreSQL: use Terraform to provision and retrieve endpoint/port
+- Managed AWS (one-shot): `make deploy` chains `tf.apply → env.sync → chalice.deploy → glue.deploy → sagemaker.sync`. Individual targets are documented in the root `Makefile` (run `make help`).
 
 ## Environment variables (.env)
 
@@ -142,8 +139,8 @@ An exhaustive example is provided in `.env.example`. Copy it to `.env` and fill 
 
 ## Quick references
 
-- API code: `app/chalice/app.py`
+- API code: `app/api/app.py`
 - Job entry point: `src/fraudit/main.py`
 - Schema/Transform/Load: `src/fraudit/jobs/elt/{schema,transform,loader}.py`
 - Postgres DDL: `src/fraudit/utils/create_database_table.py`
-- IaC: `devops/infra/main` (see dedicated README)
+- IaC: `devops/infra/dev/` (see [docs/terraform.md](terraform.md))
