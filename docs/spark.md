@@ -27,8 +27,8 @@ $ sudo mv spark-<version>-bin-hadoop<version> /opt/spark
 
 ```bash
 $ ls /opt/spark
-bin   data      jars        LICENSE   NOTICE  R          RELEASE  yarn
-conf  examples  kubernetes  licenses  python  terraform.md  sbin
+bin   data      jars        LICENSE   NOTICE  R       RELEASE  yarn
+conf  examples  kubernetes  licenses  python  README  sbin
 ```
 You should see directories like `bin`, `conf`, `jars`, `python`, etc.
 

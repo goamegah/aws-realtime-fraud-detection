@@ -28,11 +28,18 @@ Important (security and name collisions):
 
 ## Quick start
 ```bash
-cd devops/infra/main
-# Optional: adjust dev.tfvars
+# From the repo root
+make tf.init
+make tf.plan       # uses devops/infra/dev/dev.tfvars
+make tf.apply
+make env.sync      # propagate outputs into .env
+```
+
+Or directly with Terraform:
+```bash
+cd devops/infra/dev
 terraform init
-# Deploy full stack (Glue and SageMaker):
-terraform apply
+terraform apply -var-file=dev.tfvars
 ```
 
 ## Main variables (variables.tf):
@@ -77,35 +84,32 @@ Note:
   - POSTGRES_PORT = <output.rds_postgres_port>
   - POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD = your values
 
-## Glue artifacts (to upload to S3)
-The Glue job (glue.tf) references S3 locations:
-- Glue script: s3://<spark_streaming_bucket>/spark-jobs/glue_job.py
-- Project wheel: s3://<spark_streaming_bucket>/wheel/fraudit-0.0.1-py3-none-any.whl
-- Kinesis connector JAR: s3://<spark_streaming_bucket>/jars/spark-streaming-sql-kinesis-connector_2.12-1.0.0.jar
+## Glue artifacts (uploaded to S3)
+The Glue job (`glue.tf`) references S3 locations:
+- Glue script: `s3://<spark_streaming_bucket>/spark-jobs/glue_job.py`
+- Project wheel: `s3://<spark_streaming_bucket>/wheel/fraudit-0.0.1-py3-none-any.whl`
+- Kinesis connector JAR: `s3://<spark_streaming_bucket>/jars/spark-streaming-sql-kinesis-connector_2.12-1.0.0.jar`
 
-Indicative steps:
-1) Build the project wheel (from repo root):
-   - python -m pip install build
-   - python -m build  # produces dist/fraudit-*.whl
-2) Copy artifacts to the streaming S3 bucket (see s3.tf for the name):
-   - aws s3 cp src/fraudit/glue_job.py s3://<bucket>/spark-jobs/glue_job.py
-   - aws s3 cp dist/fraudit-0.0.1-py3-none-any.whl s3://<bucket>/wheel/
-   - aws s3 cp src/resources/spark-streaming-sql-kinesis-connector_2.12-1.0.0.jar s3://<bucket>/jars/
-
-Once the artifacts are uploaded, you can start the Glue job from the console, ensuring the default arguments defined in glue.tf are set.
-
-## Python deployment wrapper (artifacts)
-Use the Python CLI to upload non-infra artifacts after Terraform:
+All three are built and uploaded by:
 
 ```bash
-python -m devops.deploy.cli \
-  --bucket $(terraform output -raw spark_streaming_bucket_name) \
-  --region <aws-region>  # uploads Glue artifacts (build + upload); notebooks are not synced to S3
+make glue.deploy
+```
+
+This target builds the wheel and runs `aws s3 cp` for the wheel, the Glue script (`src/fraudit/glue_job.py`) and the Kinesis connector JAR (`src/resources/...jar`).
+
+## SageMaker notebooks
+Notebooks in `sagemaker/` are synced to `s3://<spark_ml_bucket>/notebooks/` and the notebook instance is restarted with:
+
+```bash
+make sagemaker.sync
 ```
 
 ## Cleanup
 ```bash
-terraform destroy -var-file=dev.tfvars
+make tf.destroy
+# or
+cd devops/infra/dev && terraform destroy -var-file=dev.tfvars
 ```
 
 ## Notes
