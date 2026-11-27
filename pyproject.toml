@@ -4,7 +4,7 @@ version = "0.0.1"
 description = "Package for running the data pipeline for AWS fraud detection"
 readme = "README.md"
 requires-python = ">=3.10"
-authors = [{name = "Godwin AMEGAH", email = "komlan.godwin.amegah@gmail.com"}]
+authors = [{name = "The Use Case Engineer", email = "theusecaseengineer@gmail.com"}]
 dependencies = [
     # Core dependencies
     "pyspark>=3.5.5",
